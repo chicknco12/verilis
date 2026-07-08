@@ -5,7 +5,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   BarChart, Bar,
 } from 'recharts'
-import { Activity, ArrowUpRight } from 'lucide-react'
+import { Activity } from 'lucide-react'
 
 const GOLD = '#C8A96A'
 const ELECTRIC = '#4D8DFF'
@@ -77,7 +77,7 @@ export default function PmoDashboard() {
   }, [])
 
   if (!data) {
-    return <div className="glass rounded-2xl h-64 flex items-center justify-center text-muted-foreground">Initializing telemetry\u2026</div>
+    return <div className="glass rounded-2xl h-64 flex items-center justify-center text-muted-foreground">Initializing telemetry…</div>
   }
 
   return (
@@ -85,12 +85,11 @@ export default function PmoDashboard() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className={`inline-flex h-2 w-2 rounded-full ${pulse ? 'bg-electric' : 'bg-electric/60'} transition-colors`} />
-          LIVE \u00B7 {data.activePrograms} active programmes \u00B7 {data.dependencies} tracked dependencies
+          LIVE · {data.activePrograms} active programmes · {data.dependencies} tracked dependencies
         </div>
         <div className="flex items-center gap-1.5 text-xs text-white/40"><Activity className="h-3.5 w-3.5" /> auto-refresh 7s</div>
       </div>
 
-      {/* KPI gauges */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Gauge label="Portfolio Health" value={data.kpis.portfolioHealth} hint="Green across delivery" accent={GOLD} />
         <Gauge label="Delivery Confidence" value={data.kpis.deliveryConfidence} hint="Forecast to plan" accent={ELECTRIC} />
@@ -99,9 +98,8 @@ export default function PmoDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Velocity */}
         <div className="glass rounded-2xl p-5 lg:col-span-2">
-          <div className="text-sm text-foreground mb-4">Delivery Velocity \u2014 planned vs actual</div>
+          <div className="text-sm text-foreground mb-4">Delivery Velocity — planned vs actual</div>
           <ResponsiveContainer width="100%" height={230}>
             <AreaChart data={data.velocity} margin={{ left: -18, right: 6, top: 4 }}>
               <defs>
@@ -124,7 +122,6 @@ export default function PmoDashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Risk */}
         <div className="glass rounded-2xl p-5">
           <div className="text-sm text-foreground mb-4">Risk Exposure by Category</div>
           <ResponsiveContainer width="100%" height={230}>
@@ -139,9 +136,8 @@ export default function PmoDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Budget */}
         <div className="glass rounded-2xl p-5">
-          <div className="text-sm text-foreground mb-4">Budget \u2014 allocated vs spent (\u00A3m)</div>
+          <div className="text-sm text-foreground mb-4">Budget — allocated vs spent (£m)</div>
           <ResponsiveContainer width="100%" height={210}>
             <BarChart data={data.budget} margin={{ left: -20, right: 6 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -154,7 +150,6 @@ export default function PmoDashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Programs table */}
         <div className="glass rounded-2xl p-5 lg:col-span-2">
           <div className="text-sm text-foreground mb-4">Programme Portfolio</div>
           <div className="space-y-3">

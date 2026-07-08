@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Sparkles, FileText, Mail, ClipboardList, Loader2, ArrowRight } from 'lucide-react'
 
-const GREETING = 'Welcome to the Virellis boardroom. I\u2019m the Virellis concierge. What transformation are you trying to achieve?'
+const GREETING = 'Welcome to the Virellis boardroom. I’m the Virellis concierge. What transformation are you trying to achieve?'
 
 export default function ConciergeBoardroom() {
   const [messages, setMessages] = useState([{ role: 'assistant', content: GREETING }])
@@ -39,7 +39,7 @@ export default function ConciergeBoardroom() {
         body: JSON.stringify({ sessionId: sessionId.current, message: text }),
       })
       const data = await res.json()
-      setMessages((m) => [...m, { role: 'assistant', content: data.reply || 'Apologies \u2014 I had trouble responding. Please try again.' }])
+      setMessages((m) => [...m, { role: 'assistant', content: data.reply || 'Apologies — I had trouble responding. Please try again.' }])
       if (typeof data.userTurns === 'number') setUserTurns(data.userTurns)
     } catch (e) {
       setMessages((m) => [...m, { role: 'assistant', content: 'Connection issue. Please try again.' }])
@@ -72,7 +72,6 @@ export default function ConciergeBoardroom() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-      {/* Chat */}
       <div className="lg:col-span-3 glass rounded-2xl flex flex-col overflow-hidden" style={{ minHeight: 460 }}>
         <div className="flex items-center gap-2 border-b border-white/8 px-5 py-3.5">
           <span className="relative inline-flex h-2.5 w-2.5">
@@ -115,7 +114,7 @@ export default function ConciergeBoardroom() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKey}
-            placeholder="Describe the transformation you\u2019re driving\u2026"
+            placeholder="Describe the transformation you’re driving…"
             className="flex-1 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-white/30"
           />
           <button onClick={send} disabled={loading || !input.trim()} className="btn-gold inline-flex items-center justify-center rounded-xl h-10 w-10 disabled:opacity-40">
@@ -124,12 +123,11 @@ export default function ConciergeBoardroom() {
         </div>
       </div>
 
-      {/* Brief panel */}
       <div className="lg:col-span-2 space-y-4">
         <div className="glass rounded-2xl p-5">
           <div className="flex items-center gap-2 text-sm font-medium"><Sparkles className="h-4 w-4 text-gold" /> Engagement Brief</div>
           <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-            Once the concierge understands your goal, generate a board-ready brief \u2014 agenda, proposed workstreams, a follow-up email and a CRM entry \u2014 automatically.
+            Once the concierge understands your goal, generate a board-ready brief — agenda, proposed workstreams, a follow-up email and a CRM entry — automatically.
           </p>
           <button
             onClick={generateBrief}
@@ -137,7 +135,7 @@ export default function ConciergeBoardroom() {
             className="btn-gold mt-4 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {briefLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-            {briefLoading ? 'Composing\u2026' : 'Generate Engagement Brief'}
+            {briefLoading ? 'Composing…' : 'Generate Engagement Brief'}
           </button>
           {userTurns < 2 && <div className="mt-2 text-[11px] text-white/35">Share a little more so I can tailor it.</div>}
         </div>
