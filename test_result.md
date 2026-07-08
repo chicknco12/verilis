@@ -101,3 +101,85 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Virellis — cinematic 3D enterprise transformation consultancy site. Phase 2 adds backend rooms: AI Concierge (Emergent LLM), engagement-brief generator, and live PMO portfolio telemetry."
+
+backend:
+  - task: "PMO portfolio telemetry endpoint (GET /api/portfolio)"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Returns simulated executive portfolio JSON (kpis, velocity[], risk[], budget[], programs[], dependencies, activePrograms, generatedAt). Values randomized per call to feel live. Verify 200 + all keys present + numeric ranges sane."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED all tests. Verified: (1) HTTP 200 response, (2) All required keys present (kpis, velocity, risk, budget, programs, dependencies, activePrograms, generatedAt), (3) KPIs object has all required keys (portfolioHealth, deliveryConfidence, riskIndex, budgetHealth), (4) All arrays properly populated (velocity: 9 items, risk: 5 items, budget: 4 items, programs: 5 items), (5) Live data simulation confirmed - values differ between consecutive calls (portfolioHealth, deliveryConfidence, dependencies, generatedAt all changed). Sample data: portfolioHealth=88, deliveryConfidence=93, riskIndex=21, budgetHealth=98, dependencies=129."
+
+  - task: "AI Concierge chat (POST /api/concierge)"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Multi-turn chat via Emergent universal LLM key (OpenAI-compatible proxy https://integrations.emergentagent.com/llm, model gpt-4o-mini). Body {sessionId, message}. Persists conversation to Mongo collection virellis_conversations. Returns {sessionId, reply, userTurns}. Verify: (1) first message returns a non-empty reply and a sessionId; (2) sending a second message with same sessionId keeps context (userTurns increments to 2); (3) missing message returns 400."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED all tests. Verified: (1) Turn 1 - HTTP 200, non-empty reply (187 chars), sessionId returned, userTurns=1, (2) Turn 2 - HTTP 200 with same sessionId, contextually coherent reply (179 chars) without restart greeting, userTurns=2, context maintained correctly, (3) Negative tests - empty message rejected with HTTP 400, missing message field rejected with HTTP 400. LLM integration working correctly via Emergent proxy. Sample conversation: User asked about AI adoption for government healthcare agency, AI responded with focused qualification questions as expected."
+
+  - task: "Engagement brief generator (POST /api/concierge/brief)"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Generates structured JSON brief (summary, agenda[], proposalOutline[], followUpEmail, crm{}) from a stored conversation using json response_format. Body {sessionId}. Persists to virellis_briefs. Verify: (1) after a 2-3 turn conversation, returns brief object with keys summary/agenda/proposalOutline/followUpEmail/crm; (2) unknown sessionId returns 400."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED all tests. Verified: (1) HTTP 200 response, (2) Brief object returned with all required keys (summary, agenda, proposalOutline, followUpEmail, crm), (3) Summary is non-empty string (340 chars), (4) Agenda is non-empty array (5 items), (5) ProposalOutline is non-empty array (5 items), (6) FollowUpEmail is non-empty string (505 chars), (7) CRM object properly structured with keys: leadName, organization, industry, priority, nextStep, (8) Negative test - non-existent sessionId correctly rejected with HTTP 400. LLM JSON generation working correctly. Sample CRM data: leadName='Transformation Director', organization='Government Healthcare Agency', industry='Healthcare', priority='High'."
+
+frontend:
+  - task: "PMO Dashboard + AI Concierge Boardroom UI"
+    implemented: true
+    working: "NA"
+    file: "components/virellis/PmoDashboard.jsx, components/virellis/ConciergeBoardroom.jsx, components/virellis/Experience.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Frontend not to be auto-tested yet unless user approves. Built recharts dashboard (auto-refresh 7s) and chat boardroom with brief panel."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "PMO portfolio telemetry endpoint (GET /api/portfolio)"
+    - "AI Concierge chat (POST /api/concierge)"
+    - "Engagement brief generator (POST /api/concierge/brief)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: "Phase 2 backend added: /api/portfolio (simulated), /api/concierge (Emergent LLM multi-turn chat), /api/concierge/brief (structured JSON brief). Emergent key is in .env as EMERGENT_LLM_KEY and verified working via direct proxy curl. Please test the 3 backend endpoints per the notes. Do NOT test frontend. Base path is /api. Use realistic conversation for concierge (e.g., about AI adoption in a government agency) before requesting a brief."
+    -agent: "testing"
+    -message: "✅ Backend testing COMPLETE - ALL 3 ENDPOINTS PASSED (31/31 tests). Tested: (1) GET /api/portfolio - simulated portfolio data with proper randomization, (2) POST /api/concierge - multi-turn AI chat with Emergent LLM, context maintained across turns, proper validation, (3) POST /api/concierge/brief - structured brief generation from conversation with all required fields. All negative test cases passed (empty/missing messages, non-existent sessionId). Emergent LLM integration working correctly. No critical issues found. Backend is production-ready."

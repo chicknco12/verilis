@@ -12,6 +12,8 @@ import { content } from '@/lib/virellis/content'
 import { scrollStore } from '@/lib/virellis/scrollStore'
 
 const Scene3D = dynamic(() => import('./Scene3D'), { ssr: false })
+const PmoDashboard = dynamic(() => import('./PmoDashboard'), { ssr: false })
+const ConciergeBoardroom = dynamic(() => import('./ConciergeBoardroom'), { ssr: false })
 
 const ICONS = { Compass, ShieldCheck, Sparkles, Rocket, Database, Cloud, LayoutDashboard, Lightbulb }
 
@@ -280,6 +282,26 @@ export default function Experience() {
           </div>
         </section>
 
+        {/* PMO DASHBOARD */}
+        <section id="dashboard" className="relative py-32">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <Reveal className="max-w-3xl">
+              <div className="flex items-center gap-2 text-[11px] tracking-[0.45em] text-gold/80">
+                <Command className="h-4 w-4" /> THE COMMAND CENTER
+              </div>
+              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
+                Live executive telemetry for enterprise delivery.
+              </h2>
+              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">
+                A real-time PMO operating picture {'\u2014'} portfolio health, delivery confidence, risk exposure, budget and programme velocity {'\u2014'} the way a transformation leader reads the enterprise.
+              </p>
+            </Reveal>
+            <div className="mt-12">
+              <PmoDashboard />
+            </div>
+          </div>
+        </section>
+
         {/* METRICS */}
         <section id="capabilities" className="relative py-28">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
@@ -299,6 +321,20 @@ export default function Experience() {
                 </Reveal>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* INDUSTRIES */}
+        <section className="relative py-6">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <Reveal>
+              <div className="glass rounded-2xl px-6 py-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+                <span className="text-[11px] tracking-[0.35em] text-white/40">INDUSTRIES SERVED</span>
+                {content.industries.map((i) => (
+                  <span key={i} className="text-sm text-muted-foreground">{i}</span>
+                ))}
+              </div>
+            </Reveal>
           </div>
         </section>
 
@@ -344,35 +380,25 @@ export default function Experience() {
           </div>
         </section>
 
-        {/* COMMAND CENTER / CTA */}
-        <section id="command" className="relative py-24">
+        {/* AI CONCIERGE BOARDROOM */}
+        <section id="concierge" className="relative py-24">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
             <Reveal>
-              <div className="relative overflow-hidden rounded-[2rem] glass p-10 md:p-16">
+              <div className="relative overflow-hidden rounded-[2rem] glass p-6 md:p-12">
                 <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-electric/20 blur-[90px]" />
                 <div className="absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-gold/20 blur-[90px]" />
                 <div className="relative">
                   <div className="flex items-center gap-2 text-[11px] tracking-[0.45em] text-gold/80">
-                    <Command className="h-4 w-4" /> {content.command.eyebrow}
+                    <Command className="h-4 w-4" /> THE BOARDROOM
                   </div>
                   <h2 className="font-display mt-5 max-w-3xl text-3xl md:text-5xl font-semibold leading-[1.08] tracking-tight">
-                    {content.command.title}
+                    No contact form. A conversation with the Virellis concierge.
                   </h2>
-                  <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.command.subtitle}</p>
-
-                  <div className="mt-9 flex flex-wrap gap-3">
-                    {content.command.modules.map((m) => (
-                      <span key={m} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs text-white/70">
-                        <Plus className="h-3 w-3 text-gold" /> {m}
-                        <span className="text-[10px] text-white/30">soon</span>
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="mt-10">
-                    <button onClick={() => scrollTo('#top')} className="btn-gold inline-flex items-center gap-2 rounded-full px-8 py-4 text-sm font-medium">
-                      {content.command.cta} <ArrowRight className="h-4 w-4" />
-                    </button>
+                  <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">
+                    Describe the transformation you{"\u2019"}re driving. The concierge qualifies the engagement conversationally, then generates a board-ready brief {'\u2014'} agenda, workstreams, follow-up email and CRM entry {'\u2014'} in minutes.
+                  </p>
+                  <div className="mt-9">
+                    <ConciergeBoardroom />
                   </div>
                 </div>
               </div>
