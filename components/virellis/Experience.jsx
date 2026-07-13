@@ -208,8 +208,8 @@ export default function Experience() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: HERO_DELAY + 0.15, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
             >
-              Transforming Enterprise Complexity into{' '}
-              <span className="text-gold-gradient">Intelligent Delivery</span>
+              The operating system for{' '}
+              <span className="text-gold-gradient">enterprise transformation.</span>
             </motion.h1>
             <motion.p
               className="mx-auto mt-7 max-w-2xl text-base md:text-lg leading-relaxed text-muted-foreground"
@@ -314,7 +314,7 @@ export default function Experience() {
                 <Reveal key={m.label} delay={i * 0.08}>
                   <div className="glass rounded-2xl p-7">
                     <div className="font-display text-3xl md:text-4xl font-semibold text-gold-gradient">
-                      <Counter value={m.value} prefix={m.prefix} suffix={m.suffix} decimals={m.decimals} />
+                      {m.display ? m.display : <Counter value={m.value} prefix={m.prefix} suffix={m.suffix} decimals={m.decimals} />}
                     </div>
                     <div className="mt-3 text-sm text-muted-foreground">{m.label}</div>
                   </div>
@@ -346,11 +346,9 @@ export default function Experience() {
                 <div className="relative">
                   <div className="absolute -inset-4 rounded-3xl bg-gold/10 blur-2xl" />
                   <div className="relative overflow-hidden rounded-3xl border border-white/10">
-                    <img
-                      src={content.founder.image}
-                      alt={content.founder.name}
-                      className="h-[520px] w-full object-cover object-top grayscale contrast-[1.05]"
-                    />
+                    <div className="h-[520px] w-full flex items-center justify-center bg-white/[0.06] text-white/40 text-sm">
+                      Add your real photo here
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-graphite-950 via-transparent to-transparent" />
                     <div className="absolute bottom-6 left-6">
                       <div className="font-display text-xl font-semibold">{content.founder.name}</div>
@@ -362,7 +360,9 @@ export default function Experience() {
               <Reveal delay={0.12}>
                 <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.founder.eyebrow}</p>
                 <h2 className="font-display mt-5 text-3xl md:text-4xl font-semibold leading-[1.15] tracking-tight">
-                  {content.founder.bio}
+                  {content.founder.bio.map((p, i) => (
+                    <span key={i} className={i > 0 ? 'block mt-5' : 'block'}>{p}</span>
+                  ))}
                 </h2>
                 <blockquote className="mt-8 border-l-2 border-gold/50 pl-5 text-lg text-muted-foreground italic">
                   {'\u201C'}{content.founder.quote}{'\u201D'}
@@ -392,10 +392,10 @@ export default function Experience() {
                     <Command className="h-4 w-4" /> THE BOARDROOM
                   </div>
                   <h2 className="font-display mt-5 max-w-3xl text-3xl md:text-5xl font-semibold leading-[1.08] tracking-tight">
-                    No contact form. A conversation with the Virellis concierge.
+                    Start with a conversation. Leave with a brief.
                   </h2>
                   <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">
-                    Describe the transformation you{"\u2019"}re driving. The concierge qualifies the engagement conversationally, then generates a board-ready brief {'\u2014'} agenda, workstreams, follow-up email and CRM entry {'\u2014'} in minutes.
+                    Describe the transformation you{"\u2019"}re navigating {'\u2014'} the pressure, the timeline, the stakeholders. The Virellis concierge qualifies the engagement in real time, then generates a board-ready brief {'\u2014'} scope, workstreams, recommended approach, and a follow-up you can share internally within minutes.
                   </p>
                   <div className="mt-9">
                     <ConciergeBoardroom />
