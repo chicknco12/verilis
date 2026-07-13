@@ -158,6 +158,12 @@
 }
 .animate-scroll-line { animation: scroll-line 2.2s ease-in-out infinite; }
 
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 55s linear infinite; }
+
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #08090c; }
 ::-webkit-scrollbar-thumb { background: #24272e; border-radius: 4px; }

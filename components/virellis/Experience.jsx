@@ -15,6 +15,7 @@ const Scene3D = dynamic(() => import('./Scene3D'), { ssr: false })
 import DeliveryFramework from './DeliveryFramework'
 import DomainRoom from './DomainRoom'
 import LeadershipConstellation from './LeadershipConstellation'
+import TestimonialsOrbit from './TestimonialsOrbit'
 const PmoDashboard = dynamic(() => import('./PmoDashboard'), { ssr: false })
 const ConciergeBoardroom = dynamic(() => import('./ConciergeBoardroom'), { ssr: false })
 
@@ -420,6 +421,22 @@ export default function Experience() {
             <div className="mt-12">
               <LeadershipConstellation />
             </div>
+          </div>
+        </section>
+
+        {/* TESTIMONIALS ORBIT */}
+        <section id="testimonials" className="relative py-28">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <Reveal className="max-w-3xl">
+              <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.testimonials.eyebrow}</p>
+              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
+                {content.testimonials.title}
+              </h2>
+              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.testimonials.subtitle}</p>
+            </Reveal>
+          </div>
+          <div className="mt-12">
+            <TestimonialsOrbit />
           </div>
         </section>
 
