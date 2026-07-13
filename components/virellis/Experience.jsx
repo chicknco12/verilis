@@ -16,6 +16,7 @@ import DeliveryFramework from './DeliveryFramework'
 import DomainRoom from './DomainRoom'
 import LeadershipConstellation from './LeadershipConstellation'
 import TestimonialsOrbit from './TestimonialsOrbit'
+import GovernanceRoom from './GovernanceRoom'
 const PmoDashboard = dynamic(() => import('./PmoDashboard'), { ssr: false })
 const ConciergeBoardroom = dynamic(() => import('./ConciergeBoardroom'), { ssr: false })
 
@@ -324,6 +325,22 @@ export default function Experience() {
             </Reveal>
             <div className="mt-12">
               <PmoDashboard />
+            </div>
+          </div>
+        </section>
+
+        {/* GOVERNANCE ROOM */}
+        <section id="governance" className="relative py-32">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <Reveal className="max-w-3xl">
+              <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.governance.eyebrow}</p>
+              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
+                {content.governance.title}
+              </h2>
+              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.governance.subtitle}</p>
+            </Reveal>
+            <div className="mt-12">
+              <GovernanceRoom />
             </div>
           </div>
         </section>
