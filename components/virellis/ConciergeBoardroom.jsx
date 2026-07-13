@@ -39,7 +39,7 @@ export default function ConciergeBoardroom() {
         body: JSON.stringify({ sessionId: sessionId.current, message: text }),
       })
       const data = await res.json()
-      setMessages((m) => [...m, { role: 'assistant', content: data.reply || 'Apologies — I had trouble responding. Please try again.' }])
+      setMessages((m) => [...m, { role: 'assistant', content: data.reply || 'Apologies, I had trouble responding. Please try again.' }])
       if (typeof data.userTurns === 'number') setUserTurns(data.userTurns)
     } catch (e) {
       setMessages((m) => [...m, { role: 'assistant', content: 'Connection issue. Please try again.' }])
@@ -127,7 +127,7 @@ export default function ConciergeBoardroom() {
         <div className="glass rounded-2xl p-5">
           <div className="flex items-center gap-2 text-sm font-medium"><Sparkles className="h-4 w-4 text-gold" /> Engagement Brief</div>
           <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-            Once the concierge understands your goal, generate a board-ready brief — agenda, proposed workstreams, a follow-up email and a CRM entry — automatically.
+            Once the concierge understands your goal, generate a board-ready brief: agenda, proposed workstreams, a follow-up email and a CRM entry, automatically.
           </p>
           <button
             onClick={generateBrief}

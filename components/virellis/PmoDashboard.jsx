@@ -99,7 +99,7 @@ export default function PmoDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="glass rounded-2xl p-5 lg:col-span-2">
-          <div className="text-sm text-foreground mb-4">Delivery Velocity — planned vs actual</div>
+          <div className="text-sm text-foreground mb-4">Delivery Velocity: planned vs actual</div>
           <ResponsiveContainer width="100%" height={230}>
             <AreaChart data={data.velocity} margin={{ left: -18, right: 6, top: 4 }}>
               <defs>
@@ -137,7 +137,7 @@ export default function PmoDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="glass rounded-2xl p-5">
-          <div className="text-sm text-foreground mb-4">Budget — allocated vs spent (£m)</div>
+          <div className="text-sm text-foreground mb-4">Budget: allocated vs spent (£m)</div>
           <ResponsiveContainer width="100%" height={210}>
             <BarChart data={data.budget} margin={{ left: -20, right: 6 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />

@@ -2,9 +2,9 @@ import './globals.css'
 import { Providers } from './providers'
 
 export const metadata = {
-  title: 'Virellis — Enterprise Transformation & Programme Delivery',
+  title: 'Virellis: Enterprise Transformation and Programme Delivery',
   description:
-    'Virellis is a specialist transformation consultancy helping governments, healthcare, financial services, and technology enterprises deliver complex programmes with confidence. Strategy, governance, AI, and delivery — one operating model.',
+    'Virellis is a specialist transformation consultancy helping governments, healthcare, financial services, and technology enterprises deliver complex programmes with confidence. Strategy, governance, AI, and delivery in one operating model.',
 }
 
 export default function RootLayout({ children }) {
