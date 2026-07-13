@@ -17,6 +17,7 @@ import DomainRoom from './DomainRoom'
 import LeadershipConstellation from './LeadershipConstellation'
 import TestimonialsOrbit from './TestimonialsOrbit'
 import GovernanceRoom from './GovernanceRoom'
+import TransformationMode from './TransformationMode'
 const PmoDashboard = dynamic(() => import('./PmoDashboard'), { ssr: false })
 const ConciergeBoardroom = dynamic(() => import('./ConciergeBoardroom'), { ssr: false })
 
@@ -103,6 +104,7 @@ function Reveal({ children, delay = 0, className = '' }) {
 export default function Experience() {
   const [loading, setLoading] = useState(true)
   const [openDomain, setOpenDomain] = useState(null)
+  const [transformMode, setTransformMode] = useState(false)
   const lenisRef = useRef(null)
 
   useEffect(() => {
@@ -137,6 +139,22 @@ export default function Experience() {
     }
   }, [])
 
+  useEffect(() => {
+    const seq = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a']
+    let idx = 0
+    const onKey = (e) => {
+      const k = (e.key || '').toLowerCase()
+      if (k === seq[idx]) {
+        idx += 1
+        if (idx === seq.length) { setTransformMode(true); idx = 0 }
+      } else {
+        idx = k === seq[0] ? 1 : 0
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   const scrollTo = (href) => {
     if (lenisRef.current) lenisRef.current.scrollTo(href, { offset: -20 })
   }
@@ -150,6 +168,9 @@ export default function Experience() {
         {openDomain !== null && (
           <DomainRoom domain={content.domains[openDomain]} onClose={() => setOpenDomain(null)} />
         )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {transformMode && <TransformationMode onClose={() => setTransformMode(false)} />}
       </AnimatePresence>
 
       {/* Fixed 3D background */}
