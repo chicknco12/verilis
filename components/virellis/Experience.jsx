@@ -346,9 +346,11 @@ export default function Experience() {
                 <div className="relative">
                   <div className="absolute -inset-4 rounded-3xl bg-gold/10 blur-2xl" />
                   <div className="relative overflow-hidden rounded-3xl border border-white/10">
-                    <div className="h-[520px] w-full flex items-center justify-center bg-white/[0.06] text-white/40 text-sm">
-                      Add your real photo here
-                    </div>
+                    <img
+                      src={content.founder.image}
+                      alt={content.founder.name}
+                      className="h-[520px] w-full object-cover object-top"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-graphite-950 via-transparent to-transparent" />
                     <div className="absolute bottom-6 left-6">
                       <div className="font-display text-xl font-semibold">{content.founder.name}</div>
@@ -359,9 +361,9 @@ export default function Experience() {
               </Reveal>
               <Reveal delay={0.12}>
                 <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.founder.eyebrow}</p>
-                <h2 className="font-display mt-5 text-3xl md:text-4xl font-semibold leading-[1.15] tracking-tight">
+                <h2 className="font-display mt-5 text-lg md:text-xl font-medium leading-relaxed tracking-tight text-foreground/90">
                   {content.founder.bio.map((p, i) => (
-                    <span key={i} className={i > 0 ? 'block mt-5' : 'block'}>{p}</span>
+                    <span key={i} className={i > 0 ? 'block mt-4' : 'block'}>{p}</span>
                   ))}
                 </h2>
                 <blockquote className="mt-8 border-l-2 border-gold/50 pl-5 text-lg text-muted-foreground italic">
