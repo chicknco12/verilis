@@ -18,8 +18,10 @@ import LeadershipConstellation from './LeadershipConstellation'
 import TestimonialsOrbit from './TestimonialsOrbit'
 import GovernanceRoom from './GovernanceRoom'
 import TransformationMode from './TransformationMode'
+import TransformationJourney from './TransformationJourney'
 const PmoDashboard = dynamic(() => import('./PmoDashboard'), { ssr: false })
 const ConciergeBoardroom = dynamic(() => import('./ConciergeBoardroom'), { ssr: false })
+const GlobalFootprint = dynamic(() => import('./GlobalFootprint'), { ssr: false })
 
 const ICONS = { Compass, ShieldCheck, Sparkles, Rocket, Database, Cloud, LayoutDashboard, Lightbulb }
 
@@ -442,6 +444,36 @@ export default function Experience() {
                   ))}
                 </div>
               </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* TRANSFORMATION JOURNEY */}
+        <section id="journey" className="relative py-32">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <Reveal className="max-w-3xl">
+              <p className="text-[11px] tracking-[0.45em] text-[#B084F5]">{content.journey.eyebrow}</p>
+              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
+                {content.journey.title}
+              </h2>
+              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.journey.subtitle}</p>
+            </Reveal>
+            <TransformationJourney />
+          </div>
+        </section>
+
+        {/* GLOBAL FOOTPRINT */}
+        <section id="footprint" className="relative py-32">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <Reveal className="max-w-3xl">
+              <p className="text-[11px] tracking-[0.45em] text-[#B084F5]">{content.footprint.eyebrow}</p>
+              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
+                {content.footprint.title}
+              </h2>
+              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.footprint.subtitle}</p>
+            </Reveal>
+            <div className="mt-12">
+              <GlobalFootprint />
             </div>
           </div>
         </section>
