@@ -10,11 +10,11 @@ const DOMAINS = 8
 const SPHERE_R = 3.1
 const MAX_EDGES = 1300
 
-// Refined luxury palette mapped to the 8 transformation domains
-// (champagne gold tones + electric blue tones + near-white)
+// Refined light-theme palette mapped to the 8 transformation domains
+// (Virellis blue / indigo / cyan tones that read cleanly on white)
 const PALETTE = [
-  '#E4CE9B', '#C8A96A', '#7FB0FF', '#4D8DFF',
-  '#EDE4CF', '#9CC0FF', '#D9BE82', '#5E97FF',
+  '#2563EB', '#3B82F6', '#4F46E5', '#6366F1',
+  '#0EA5E9', '#06B6D4', '#1D4ED8', '#60A5FA',
 ]
 
 function fibPoint(i, n, r) {
@@ -49,8 +49,8 @@ const fragmentShader = `
     float d = length(uv);
     if (d > 0.5) discard;
     float alpha = smoothstep(0.5, 0.0, d);
-    alpha *= 0.35 + 0.65 * vGlow;
-    gl_FragColor = vec4(vColor * (1.1 + vGlow * 0.6), alpha);
+    alpha *= 0.55 + 0.45 * vGlow;
+    gl_FragColor = vec4(vColor, alpha);
   }
 `
 
@@ -59,9 +59,9 @@ function makeGlowTexture() {
   c.width = c.height = 160
   const ctx = c.getContext('2d')
   const g = ctx.createRadialGradient(80, 80, 0, 80, 80, 80)
-  g.addColorStop(0, 'rgba(200,169,106,0.55)')
-  g.addColorStop(0.28, 'rgba(120,140,190,0.20)')
-  g.addColorStop(1, 'rgba(0,0,0,0)')
+  g.addColorStop(0, 'rgba(37,99,235,0.22)')
+  g.addColorStop(0.3, 'rgba(79,70,229,0.10)')
+  g.addColorStop(1, 'rgba(255,255,255,0)')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, 160, 160)
   return new THREE.CanvasTexture(c)
@@ -143,7 +143,7 @@ export default function ComplexitySphere() {
         fragmentShader,
         transparent: true,
         depthWrite: false,
-        blending: THREE.AdditiveBlending,
+        blending: THREE.NormalBlending,
       }),
     []
   )
@@ -200,7 +200,7 @@ export default function ComplexitySphere() {
   return (
     <group ref={groupRef}>
       <sprite ref={glowRef} scale={[10, 10, 1]}>
-        <spriteMaterial map={glowTex} transparent depthWrite={false} blending={THREE.AdditiveBlending} opacity={0.9} />
+        <spriteMaterial map={glowTex} transparent depthWrite={false} blending={THREE.NormalBlending} opacity={0.7} />
       </sprite>
 
       <points ref={pointsRef} material={material}>
@@ -217,11 +217,11 @@ export default function ComplexitySphere() {
         </bufferGeometry>
         <lineBasicMaterial
           ref={lineMatRef}
-          color={'#8fa6c8'}
+          color={'#2563EB'}
           transparent
-          opacity={0.16}
+          opacity={0.14}
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
+          blending={THREE.NormalBlending}
         />
       </lineSegments>
     </group>

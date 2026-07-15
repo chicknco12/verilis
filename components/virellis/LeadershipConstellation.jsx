@@ -22,7 +22,7 @@ export default function LeadershipConstellation() {
                 <line
                   key={k}
                   x1={nodes[i].x} y1={nodes[i].y} x2={nodes[j].x} y2={nodes[j].y}
-                  stroke={on ? 'rgba(200,169,106,0.55)' : 'rgba(255,255,255,0.10)'}
+                  stroke={on ? 'rgba(37,99,235,0.55)' : 'rgba(15,23,42,0.10)'}
                   strokeWidth={on ? 1.1 : 0.6}
                   vectorEffect="non-scaling-stroke"
                   style={{ transition: 'stroke 0.4s ease' }}
@@ -46,8 +46,8 @@ export default function LeadershipConstellation() {
                     style={{
                       height: isA ? 14 : 10,
                       width: isA ? 14 : 10,
-                      background: isA ? '#E4CE9B' : 'rgba(255,255,255,0.5)',
-                      boxShadow: isA ? '0 0 16px rgba(200,169,106,0.85)' : 'none',
+                      background: isA ? '#2563EB' : 'rgba(15,23,42,0.28)',
+                      boxShadow: isA ? '0 0 16px rgba(37,99,235,0.55)' : 'none',
                     }}
                   />
                 </span>

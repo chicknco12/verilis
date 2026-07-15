@@ -22,11 +22,19 @@ module.exports = {
           display: ['Sora', 'Inter', 'sans-serif'],
         },
         colors: {
+          // Light theme surfaces (token names kept so existing classes remap cleanly)
           graphite: {
-            950: '#050608', 900: '#08090c', 800: '#0c0e12', 700: '#12151a', 600: '#1a1e25',
+            950: '#FFFFFF', 900: '#F8FAFC', 800: '#F4F6F8', 700: '#EEF2F7', 600: '#E2E8F0',
           },
-          gold: { DEFAULT: '#C8A96A', light: '#E4CE9B', dark: '#A6884C' },
-          electric: { DEFAULT: '#4D8DFF', light: '#7FB0FF', dark: '#2E6BE6' },
+          // Virellis brand blue (kept under the legacy `gold` token so accents flip automatically)
+          gold: { DEFAULT: '#2563EB', light: '#3B82F6', dark: '#1D4ED8' },
+          electric: { DEFAULT: '#4F46E5', light: '#6366F1', dark: '#4338CA' },
+          highlight: { DEFAULT: '#06B6D4', light: '#22D3EE' },
+          ink: { DEFAULT: '#0F172A', 700: '#334155', 500: '#64748B' },
+          // Remap `white` -> ink so legacy `text-white` / `white/opacity` utilities render as
+          // subtle dark tones on the new light backgrounds. Real white handled via CSS classes.
+          white: '#0F172A',
+          paper: '#FFFFFF',
           border: 'hsl(var(--border))',
           input: 'hsl(var(--input))',
           ring: 'hsl(var(--ring))',

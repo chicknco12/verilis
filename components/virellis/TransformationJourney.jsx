@@ -8,15 +8,15 @@ import {
 } from 'lucide-react'
 import { content } from '@/lib/virellis/content'
 
-const PURPLE = '#6C2BD9'
-const PURPLE_LIGHT = '#B084F5'
-const GOLD = '#C9A86A'
+const PURPLE = '#2563EB'
+const PURPLE_LIGHT = '#3B82F6'
+const GOLD = '#4F46E5'
 
 function accentTokens(accent) {
   if (accent === 'gold') {
-    return { dot: GOLD, glow: 'rgba(201,168,106,0.55)', ring: 'rgba(201,168,106,0.35)', text: 'text-gold' }
+    return { dot: GOLD, glow: 'rgba(79,70,229,0.28)', ring: 'rgba(79,70,229,0.25)', text: 'text-[#4F46E5]' }
   }
-  return { dot: PURPLE_LIGHT, glow: 'rgba(108,43,217,0.55)', ring: 'rgba(176,132,245,0.35)', text: 'text-[#B084F5]' }
+  return { dot: PURPLE, glow: 'rgba(37,99,235,0.22)', ring: 'rgba(37,99,235,0.22)', text: 'text-[#2563EB]' }
 }
 
 function Milestone({ m, index, isLast }) {
@@ -35,7 +35,7 @@ function Milestone({ m, index, isLast }) {
           />
           <span
             className="relative h-4 w-4 rounded-full border"
-            style={{ background: a.dot, borderColor: '#0b0b18', boxShadow: `0 0 20px 4px ${a.glow}` }}
+            style={{ background: a.dot, borderColor: '#FFFFFF', boxShadow: `0 0 18px 3px ${a.glow}` }}
           />
         </span>
       </div>
@@ -53,8 +53,9 @@ function Milestone({ m, index, isLast }) {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className={`group relative overflow-hidden rounded-2xl border p-6 md:p-7 backdrop-blur-xl transition-all duration-500`}
           style={{
-            background: 'linear-gradient(150deg, rgba(21,21,42,0.75) 0%, rgba(12,12,22,0.55) 100%)',
-            borderColor: 'rgba(255,255,255,0.08)',
+            background: '#FFFFFF',
+            borderColor: 'rgba(15,23,42,0.08)',
+            boxShadow: '0 8px 40px rgba(15,23,42,0.06)',
           }}
         >
           {/* accent glow corner */}
@@ -88,8 +89,8 @@ function Milestone({ m, index, isLast }) {
               {m.focus.slice(0, 4).map((f) => (
                 <span
                   key={f}
-                  className="rounded-full border px-2.5 py-1 text-[11px] text-white/70"
-                  style={{ borderColor: a.ring, background: 'rgba(255,255,255,0.02)' }}
+                  className="rounded-full border px-2.5 py-1 text-[11px] text-ink/70"
+                  style={{ borderColor: a.ring, background: 'rgba(37,99,235,0.04)' }}
                 >
                   {f}
                 </span>
@@ -204,16 +205,16 @@ export default function TransformationJourney() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mt-8 overflow-hidden rounded-[1.75rem] border border-white/8 p-8 md:p-12"
-        style={{ background: 'radial-gradient(120% 140% at 50% 0%, rgba(108,43,217,0.18) 0%, rgba(21,21,42,0.4) 45%, rgba(8,9,12,0.6) 100%)' }}
+        className="relative mt-8 overflow-hidden rounded-[1.75rem] border p-8 md:p-12"
+        style={{ background: 'radial-gradient(120% 140% at 50% 0%, rgba(37,99,235,0.10) 0%, rgba(248,250,252,0.9) 45%, rgba(255,255,255,1) 100%)', borderColor: 'rgba(15,23,42,0.08)', boxShadow: '0 8px 40px rgba(15,23,42,0.06)' }}
       >
-        <div className="pointer-events-none absolute -left-20 top-0 h-56 w-56 rounded-full bg-[#6C2BD9]/30 blur-[90px]" />
-        <div className="pointer-events-none absolute -right-20 bottom-0 h-56 w-56 rounded-full bg-gold/20 blur-[90px]" />
+        <div className="pointer-events-none absolute -left-20 top-0 h-56 w-56 rounded-full bg-[#2563EB]/12 blur-[90px]" />
+        <div className="pointer-events-none absolute -right-20 bottom-0 h-56 w-56 rounded-full bg-[#4F46E5]/10 blur-[90px]" />
         <div className="relative text-center">
-          <div className="inline-flex items-center gap-2 text-[11px] tracking-[0.4em] text-[#B084F5]">
+          <div className="inline-flex items-center gap-2 text-[11px] tracking-[0.4em] text-[#2563EB]">
             <Rocket className="h-3.5 w-3.5" /> {j.future.eyebrow}
           </div>
-          <h3 className="mt-5 font-display text-2xl md:text-4xl font-semibold tracking-tight text-white">
+          <h3 className="mt-5 font-display text-2xl md:text-4xl font-semibold tracking-tight text-ink">
             {j.future.title}
           </h3>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -224,9 +225,9 @@ export default function TransformationJourney() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06, duration: 0.5 }}
-                className="group inline-flex items-center gap-2 rounded-full border border-[#6C2BD9]/40 bg-[#15152A]/60 px-4 py-2 text-sm text-white/80 backdrop-blur transition-all hover:border-[#B084F5]/70 hover:text-white"
+                className="group inline-flex items-center gap-2 rounded-full border border-[#2563EB]/25 bg-paper px-4 py-2 text-sm text-ink/80 shadow-sm transition-all hover:border-[#2563EB]/60 hover:text-ink hover:shadow-md"
               >
-                <Sparkles className="h-3.5 w-3.5 text-[#B084F5]" />
+                <Sparkles className="h-3.5 w-3.5 text-[#2563EB]" />
                 {item}
               </motion.span>
             ))}

@@ -29,9 +29,9 @@ export default function DeliveryFramework() {
                   <span
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-medium transition-all"
                     style={{
-                      borderColor: done ? 'rgba(200,169,106,0.6)' : 'rgba(255,255,255,0.12)',
-                      color: done ? '#E4CE9B' : 'rgba(255,255,255,0.4)',
-                      background: isActive ? 'rgba(200,169,106,0.12)' : 'transparent',
+                      borderColor: done ? 'rgba(37,99,235,0.6)' : 'rgba(15,23,42,0.12)',
+                      color: done ? '#2563EB' : 'rgba(15,23,42,0.45)',
+                      background: isActive ? 'rgba(37,99,235,0.10)' : 'transparent',
                     }}
                   >
                     {String(i + 1).padStart(2, '0')}
@@ -39,7 +39,7 @@ export default function DeliveryFramework() {
                   {i < stages.length - 1 && (
                     <span
                       className="absolute top-8 h-[calc(100%_+_0.25rem)] w-px"
-                      style={{ background: i < active ? 'rgba(200,169,106,0.5)' : 'rgba(255,255,255,0.08)' }}
+                      style={{ background: i < active ? 'rgba(37,99,235,0.5)' : 'rgba(15,23,42,0.08)' }}
                     />
                   )}
                 </div>

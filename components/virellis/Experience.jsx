@@ -19,9 +19,7 @@ import TestimonialsOrbit from './TestimonialsOrbit'
 import GovernanceRoom from './GovernanceRoom'
 import TransformationMode from './TransformationMode'
 import TransformationJourney from './TransformationJourney'
-const PmoDashboard = dynamic(() => import('./PmoDashboard'), { ssr: false })
 const ConciergeBoardroom = dynamic(() => import('./ConciergeBoardroom'), { ssr: false })
-const GlobalFootprint = dynamic(() => import('./GlobalFootprint'), { ssr: false })
 
 const ICONS = { Compass, ShieldCheck, Sparkles, Rocket, Database, Cloud, LayoutDashboard, Lightbulb }
 
@@ -178,11 +176,12 @@ export default function Experience() {
       {/* Fixed 3D background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-space" />
+        <div className="absolute inset-0 bg-grid" />
         <div className="absolute inset-0">
           <Scene3D />
         </div>
         <div className="absolute inset-0 bg-vignette" />
-        <div className="absolute inset-0 grain opacity-[0.25]" />
+        <div className="absolute inset-0 grain opacity-[0.04]" />
       </div>
 
       {/* Nav */}
@@ -225,7 +224,7 @@ export default function Experience() {
         <section id="top" className="relative flex min-h-screen items-center">
           <div
             className="pointer-events-none absolute left-1/2 top-1/2 h-[620px] w-[1000px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-            style={{ background: 'radial-gradient(ellipse at center, rgba(6,7,10,0.86) 0%, rgba(6,7,10,0.58) 42%, rgba(6,7,10,0) 72%)' }}
+            style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.62) 45%, rgba(255,255,255,0) 72%)' }}
           />
           <div className="relative mx-auto w-full max-w-6xl px-6 md:px-10 text-center">
             <motion.p
@@ -317,7 +316,7 @@ export default function Experience() {
         </section>
 
         {/* DELIVERY FRAMEWORK */}
-        <section id="framework" className="relative py-32">
+        <section id="framework" className="relative py-32 bg-paper">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
             <Reveal className="max-w-3xl">
               <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.framework.eyebrow}</p>
@@ -332,28 +331,8 @@ export default function Experience() {
           </div>
         </section>
 
-        {/* PMO DASHBOARD */}
-        <section id="dashboard" className="relative py-32">
-          <div className="mx-auto max-w-7xl px-6 md:px-10">
-            <Reveal className="max-w-3xl">
-              <div className="flex items-center gap-2 text-[11px] tracking-[0.45em] text-gold/80">
-                <Command className="h-4 w-4" /> THE COMMAND CENTER
-              </div>
-              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
-                Live executive telemetry for enterprise delivery.
-              </h2>
-              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">
-                A real-time PMO operating picture: portfolio health, delivery confidence, risk exposure, budget and programme velocity, the way a transformation leader reads the enterprise.
-              </p>
-            </Reveal>
-            <div className="mt-12">
-              <PmoDashboard />
-            </div>
-          </div>
-        </section>
-
         {/* GOVERNANCE ROOM */}
-        <section id="governance" className="relative py-32">
+        <section id="governance" className="relative py-32 bg-[#F4F6F8]">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
             <Reveal className="max-w-3xl">
               <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.governance.eyebrow}</p>
@@ -369,7 +348,7 @@ export default function Experience() {
         </section>
 
         {/* METRICS */}
-        <section id="capabilities" className="relative py-28">
+        <section id="capabilities" className="relative py-28 bg-paper">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
             <Reveal className="max-w-3xl">
               <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.metrics.eyebrow}</p>
@@ -405,7 +384,7 @@ export default function Experience() {
         </section>
 
         {/* FOUNDER */}
-        <section id="founder" className="relative py-32">
+        <section id="founder" className="relative py-32 bg-[#F4F6F8]">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               <Reveal>
@@ -452,7 +431,7 @@ export default function Experience() {
         <section id="journey" className="relative py-32">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
             <Reveal className="max-w-3xl">
-              <p className="text-[11px] tracking-[0.45em] text-[#B084F5]">{content.journey.eyebrow}</p>
+              <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.journey.eyebrow}</p>
               <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
                 {content.journey.title}
               </h2>
@@ -462,24 +441,8 @@ export default function Experience() {
           </div>
         </section>
 
-        {/* GLOBAL FOOTPRINT */}
-        <section id="footprint" className="relative py-32">
-          <div className="mx-auto max-w-7xl px-6 md:px-10">
-            <Reveal className="max-w-3xl">
-              <p className="text-[11px] tracking-[0.45em] text-[#B084F5]">{content.footprint.eyebrow}</p>
-              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
-                {content.footprint.title}
-              </h2>
-              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.footprint.subtitle}</p>
-            </Reveal>
-            <div className="mt-12">
-              <GlobalFootprint />
-            </div>
-          </div>
-        </section>
-
         {/* LEADERSHIP CONSTELLATION */}
-        <section id="leadership" className="relative py-32">
+        <section id="leadership" className="relative py-32 bg-[#F4F6F8]">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
             <Reveal className="max-w-3xl">
               <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.leadership.eyebrow}</p>
@@ -495,7 +458,7 @@ export default function Experience() {
         </section>
 
         {/* TESTIMONIALS ORBIT */}
-        <section id="testimonials" className="relative py-28">
+        <section id="testimonials" className="relative py-28 bg-paper">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
             <Reveal className="max-w-3xl">
               <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.testimonials.eyebrow}</p>
@@ -511,7 +474,7 @@ export default function Experience() {
         </section>
 
         {/* AI CONCIERGE BOARDROOM */}
-        <section id="concierge" className="relative py-24">
+        <section id="concierge" className="relative py-24" style={{ background: 'linear-gradient(180deg, #FFFFFF 0%, #EFF4FF 40%, #E7EEFF 100%)' }}>
           <div className="mx-auto max-w-7xl px-6 md:px-10">
             <Reveal>
               <div className="relative overflow-hidden rounded-[2rem] glass p-6 md:p-12">

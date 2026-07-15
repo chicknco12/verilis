@@ -30,7 +30,7 @@ export default function StarField() {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
-      <pointsMaterial size={0.06} color={'#aab6cc'} transparent opacity={0.5} sizeAttenuation depthWrite={false} />
+      <pointsMaterial size={0.05} color={'#93A9D8'} transparent opacity={0.35} sizeAttenuation depthWrite={false} />
     </points>
   )
 }
