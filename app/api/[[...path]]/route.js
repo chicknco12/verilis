@@ -15,10 +15,13 @@ async function connectToMongo() {
   return db
 }
 
-// ---------------- Virellis LLM (Emergent universal key) ----------------
-const EMERGENT_LLM_KEY = process.env.EMERGENT_LLM_KEY
-const LLM_BASE = 'https://integrations.emergentagent.com/llm'
-const LLM_MODEL = 'gpt-4o-mini'
+// ---------------- Virellis LLM (Anthropic Claude) ----------------
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
+const ANTHROPIC_API_BASE = 'https://api.anthropic.com/v1/messages'
+const ANTHROPIC_VERSION = '2023-06-01'
+// Default to Claude Sonnet 5; override with ANTHROPIC_MODEL for Haiku (cheaper/faster)
+// or Opus (highest quality) instead.
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5'
 
 const CONCIERGE_SYSTEM = `You are the Virellis AI Concierge — the digital front door of Virellis, a premier enterprise transformation consultancy led by Founder & Principal Consultant Fidelis Chick.
 
@@ -37,20 +40,26 @@ Return STRICT JSON only (no markdown) with EXACTLY these keys:
 }
 Where information is missing, make reasonable, senior-level assumptions. Keep it crisp and executive.`
 
-async function llmChat(messages, { json = false, maxTokens = 500 } = {}) {
-  const payload = { model: LLM_MODEL, messages, max_tokens: maxTokens }
-  if (json) payload.response_format = { type: 'json_object' }
-  const res = await fetch(`${LLM_BASE}/chat/completions`, {
+// Calls Anthropic's Messages API directly. `system` is Anthropic's dedicated
+// system-prompt field (not a message in the array). `messages` must be a
+// strictly alternating user/assistant array with no system role inside it.
+async function llmChat(system, messages, { maxTokens = 500 } = {}) {
+  const payload = { model: ANTHROPIC_MODEL, system, messages, max_tokens: maxTokens }
+  const res = await fetch(ANTHROPIC_API_BASE, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${EMERGENT_LLM_KEY}`, 'Content-Type': 'application/json' },
+    headers: {
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': ANTHROPIC_VERSION,
+      'content-type': 'application/json',
+    },
     body: JSON.stringify(payload),
   })
   if (!res.ok) {
     const t = await res.text()
-    throw new Error(`LLM ${res.status}: ${t}`)
+    throw new Error(`Anthropic API ${res.status}: ${t}`)
   }
   const data = await res.json()
-  return data.choices?.[0]?.message?.content ?? ''
+  return (data.content || []).map((block) => block.text || '').join('')
 }
 
 function rnd(min, max) { return Math.round(min + Math.random() * (max - min)) }
@@ -101,14 +110,65 @@ function generatePortfolio() {
   }
 }
 
-// Helper function to handle CORS
+// ---------------- CORS ----------------
+// Only emit CORS headers when CORS_ORIGINS is explicitly configured. Pairing a
+// wildcard origin with Allow-Credentials: true is an invalid/unsafe combination,
+// so we never do both. With no CORS_ORIGINS set, the API is same-origin only,
+// which is correct for this app (the frontend and API share an origin).
+const CORS_ORIGINS = process.env.CORS_ORIGINS
+
 function handleCORS(response) {
-  response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || '*')
+  if (CORS_ORIGINS) {
+    response.headers.set('Access-Control-Allow-Origin', CORS_ORIGINS)
+    response.headers.set('Access-Control-Allow-Credentials', 'true')
+    response.headers.set('Vary', 'Origin')
+  }
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  response.headers.set('Access-Control-Allow-Credentials', 'true')
   return response
 }
+
+// ---------------- Basic in-memory rate limiting ----------------
+// Best-effort, per-instance rate limiting to stop trivial abuse of the LLM-backed
+// endpoints. This resets on redeploy/restart and does not share state across
+// multiple server instances — for multi-instance production deployments, swap
+// this for a shared store (e.g. Redis/Upstash) keyed the same way.
+const rateLimitBuckets = new Map()
+
+function clientKey(request) {
+  const fwd = request.headers.get('x-forwarded-for')
+  const ip = fwd ? fwd.split(',')[0].trim() : request.headers.get('x-real-ip') || 'unknown'
+  return ip
+}
+
+function checkRateLimit(key, max, windowMs) {
+  const now = Date.now()
+  // Opportunistic cleanup so the map doesn't grow unbounded.
+  if (rateLimitBuckets.size > 5000) {
+    for (const [k, v] of rateLimitBuckets) {
+      if (v.resetAt <= now) rateLimitBuckets.delete(k)
+    }
+  }
+  const entry = rateLimitBuckets.get(key)
+  if (!entry || entry.resetAt <= now) {
+    rateLimitBuckets.set(key, { count: 1, resetAt: now + windowMs })
+    return true
+  }
+  if (entry.count >= max) return false
+  entry.count += 1
+  return true
+}
+
+// ---------------- Input validation helpers ----------------
+// sessionId is used directly in Mongo findOne/updateOne filters. It must be a
+// plain string (never an object — that would let a client inject Mongo query
+// operators like {"$ne": null} and read/overwrite other sessions' data).
+function isValidSessionId(value) {
+  return typeof value === 'string' && value.length > 0 && value.length <= 100 && /^[a-zA-Z0-9_-]+$/.test(value)
+}
+
+const MAX_MESSAGE_LENGTH = 2000
+const MAX_HISTORY_MESSAGES = 40 // cap stored turns per session to bound document growth
 
 // OPTIONS handler for CORS
 export async function OPTIONS() {
@@ -136,17 +196,18 @@ async function handleRoute(request, { params }) {
     // Status endpoints - POST /api/status
     if (route === '/status' && method === 'POST') {
       const body = await request.json()
-      
-      if (!body.client_name) {
+
+      if (typeof body.client_name !== 'string' || !body.client_name.trim()) {
         return handleCORS(NextResponse.json(
-          { error: "client_name is required" }, 
+          { error: "client_name is required" },
           { status: 400 }
         ))
       }
+      const client_name = body.client_name.trim().slice(0, 200)
 
       const statusObj = {
         id: uuidv4(),
-        client_name: body.client_name,
+        client_name,
         timestamp: new Date()
       }
 
@@ -174,17 +235,24 @@ async function handleRoute(request, { params }) {
 
     // Virellis: AI Concierge (multi-turn lead qualification)
     if (route === '/concierge' && method === 'POST') {
+      if (!checkRateLimit(`concierge:${clientKey(request)}`, 15, 60_000)) {
+        return handleCORS(NextResponse.json({ error: 'Too many requests. Please slow down and try again shortly.' }, { status: 429 }))
+      }
+
       const body = await request.json()
-      const sessionId = body.sessionId || uuidv4()
-      const message = (body.message || '').toString().slice(0, 4000)
-      if (!message) {
+      const rawSessionId = body.sessionId
+      const sessionId = isValidSessionId(rawSessionId) ? rawSessionId : uuidv4()
+
+      if (typeof body.message !== 'string' || !body.message.trim()) {
         return handleCORS(NextResponse.json({ error: 'message is required' }, { status: 400 }))
       }
+      const message = body.message.trim().slice(0, MAX_MESSAGE_LENGTH)
+
       const conv = await db.collection('virellis_conversations').findOne({ sessionId })
       const history = (conv?.messages || []).map((m) => ({ role: m.role, content: m.content }))
-      const llmMessages = [{ role: 'system', content: CONCIERGE_SYSTEM }, ...history, { role: 'user', content: message }]
-      const reply = await llmChat(llmMessages, { maxTokens: 350 })
-      const newMessages = [...history, { role: 'user', content: message }, { role: 'assistant', content: reply }]
+      const llmMessages = [...history, { role: 'user', content: message }]
+      const reply = await llmChat(CONCIERGE_SYSTEM, llmMessages, { maxTokens: 350 })
+      const newMessages = [...history, { role: 'user', content: message }, { role: 'assistant', content: reply }].slice(-MAX_HISTORY_MESSAGES)
       await db.collection('virellis_conversations').updateOne(
         { sessionId },
         { $set: { sessionId, messages: newMessages, updatedAt: new Date() } },
@@ -195,20 +263,29 @@ async function handleRoute(request, { params }) {
 
     // Virellis: generate engagement brief from a conversation
     if (route === '/concierge/brief' && method === 'POST') {
+      if (!checkRateLimit(`brief:${clientKey(request)}`, 5, 600_000)) {
+        return handleCORS(NextResponse.json({ error: 'Too many requests. Please try again in a few minutes.' }, { status: 429 }))
+      }
+
       const body = await request.json()
       const sessionId = body.sessionId
+      if (!isValidSessionId(sessionId)) {
+        return handleCORS(NextResponse.json({ error: 'invalid sessionId' }, { status: 400 }))
+      }
       const conv = await db.collection('virellis_conversations').findOne({ sessionId })
       if (!conv || !conv.messages?.length) {
         return handleCORS(NextResponse.json({ error: 'no conversation found' }, { status: 400 }))
       }
       const transcript = conv.messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n')
+      // Prefill the assistant turn with '{' — a standard technique for coaxing
+      // Claude into emitting raw JSON with no markdown fences or preamble.
       const briefMsgs = [
-        { role: 'system', content: BRIEF_SYSTEM },
         { role: 'user', content: `Conversation transcript:\n${transcript}\n\nGenerate the engagement brief as strict JSON.` },
+        { role: 'assistant', content: '{' },
       ]
-      const raw = await llmChat(briefMsgs, { json: true, maxTokens: 1200 })
+      const raw = await llmChat(BRIEF_SYSTEM, briefMsgs, { maxTokens: 1200 })
       let brief
-      try { brief = JSON.parse(raw) } catch { brief = { summary: raw, agenda: [], proposalOutline: [], followUpEmail: '', crm: {} } }
+      try { brief = JSON.parse('{' + raw) } catch { brief = { summary: raw, agenda: [], proposalOutline: [], followUpEmail: '', crm: {} } }
       await db.collection('virellis_briefs').insertOne({ id: uuidv4(), sessionId, brief, createdAt: new Date() })
       return handleCORS(NextResponse.json({ brief }))
     }

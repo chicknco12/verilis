@@ -1,3 +1,24 @@
+const CORS_ORIGINS = process.env.CORS_ORIGINS
+
+const securityHeaders = [
+  // SAMEORIGIN + frame-ancestors 'self' prevents this site (including the lead
+  // capture chat form) from being iframed by third-party origins (clickjacking).
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'self';" },
+]
+
+// Only advertise CORS headers when an explicit allow-list origin is configured.
+// A wildcard origin must never be paired with Allow-Credentials: true, so by
+// default (no CORS_ORIGINS) we simply omit these headers and rely on same-origin.
+const corsHeaders = CORS_ORIGINS
+  ? [
+      { key: "Access-Control-Allow-Origin", value: CORS_ORIGINS },
+      { key: "Access-Control-Allow-Credentials", value: "true" },
+      { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
+      { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
+    ]
+  : []
+
 const nextConfig = {
   output: 'standalone',
   images: {
@@ -27,13 +48,7 @@ const nextConfig = {
     return [
       {
         source: "/(.*)",
-        headers: [
-          { key: "X-Frame-Options", value: "ALLOWALL" },
-          { key: "Content-Security-Policy", value: "frame-ancestors *;" },
-          { key: "Access-Control-Allow-Origin", value: process.env.CORS_ORIGINS || "*" },
-          { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "*" },
-        ],
+        headers: [...securityHeaders, ...corsHeaders],
       },
     ];
   },
