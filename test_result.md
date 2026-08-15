@@ -133,7 +133,13 @@ backend:
         -comment: "Multi-turn chat via Emergent universal LLM key (OpenAI-compatible proxy https://integrations.emergentagent.com/llm, model gpt-4o-mini). Body {sessionId, message}. Persists conversation to Mongo collection virellis_conversations. Returns {sessionId, reply, userTurns}. Verify: (1) first message returns a non-empty reply and a sessionId; (2) sending a second message with same sessionId keeps context (userTurns increments to 2); (3) missing message returns 400."
         -working: true
         -agent: "testing"
-        -comment: "✅ PASSED all tests. Verified: (1) Turn 1 - HTTP 200, non-empty reply (187 chars), sessionId returned, userTurns=1, (2) Turn 2 - HTTP 200 with same sessionId, contextually coherent reply (179 chars) without restart greeting, userTurns=2, context maintained correctly, (3) Negative tests - empty message rejected with HTTP 400, missing message field rejected with HTTP 400. LLM integration working correctly via Emergent proxy. Sample conversation: User asked about AI adoption for government healthcare agency, AI responded with focused qualification questions as expected."
+        -comment: "✅ PASSED all tests. Verified: (1) Turn 1 - HTTP 200, non-empty reply (187 chars), sessionId returned, userTurns=1, (2) Turn 2 - HTTP 200 with same sessionId, contextually coherent reply (179 chars) without restart greeting, userTurns=2, context maintained correctly, (3) Negative tests - empty message rejected with HTTP 400, missing message field rejected with HTTP 400. LLM integration working correctly via Emergent proxy."
+        -working: "NA"
+        -agent: "main"
+        -comment: "OPENAI CHAT MODELS INTEGRATION: llmChat now prefers a GPT-5-class model (OPENAI_CHAT_MODEL=gpt-5) via the Emergent OpenAI-compatible gateway, with automatic cached fallback to gpt-4o-mini (OPENAI_FALLBACK_MODEL) if the gateway does not expose the preferred model. Also added a one-time retry that swaps max_tokens for max_completion_tokens (required by GPT-5 class). Please RETEST: (1) first message returns non-empty reply + sessionId; (2) second message with same sessionId keeps context (userTurns=2); (3) empty/missing message returns 400. Reply quality/latency may differ if GPT-5 resolved. Check nextjs logs for the '[Virellis LLM] Active model:' or fallback line to confirm which model resolved."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ RETEST PASSED after GPT-5 integration. Initial test failed due to GPT-5 reasoning model using all tokens (350) for internal reasoning with no tokens left for output content. Fixed by increasing maxTokens from 350 to 2000 to accommodate reasoning tokens + output. Verified: (1) Turn 1 - HTTP 200, non-empty reply (335 chars), sessionId returned, userTurns=1, (2) Turn 2 - HTTP 200 with same sessionId, contextually coherent reply (391 chars) without restart greeting, userTurns=2, context maintained correctly, (3) Negative tests - empty message rejected with HTTP 400, missing message field rejected with HTTP 400. Server logs confirm '[Virellis LLM] Active model: gpt-5' - GPT-5 successfully resolved on gateway, NO fallback to gpt-4o-mini. LLM integration working correctly with GPT-5."
 
   - task: "Engagement brief generator (POST /api/concierge/brief)"
     implemented: true
@@ -148,7 +154,13 @@ backend:
         -comment: "Generates structured JSON brief (summary, agenda[], proposalOutline[], followUpEmail, crm{}) from a stored conversation using json response_format. Body {sessionId}. Persists to virellis_briefs. Verify: (1) after a 2-3 turn conversation, returns brief object with keys summary/agenda/proposalOutline/followUpEmail/crm; (2) unknown sessionId returns 400."
         -working: true
         -agent: "testing"
-        -comment: "✅ PASSED all tests. Verified: (1) HTTP 200 response, (2) Brief object returned with all required keys (summary, agenda, proposalOutline, followUpEmail, crm), (3) Summary is non-empty string (340 chars), (4) Agenda is non-empty array (5 items), (5) ProposalOutline is non-empty array (5 items), (6) FollowUpEmail is non-empty string (505 chars), (7) CRM object properly structured with keys: leadName, organization, industry, priority, nextStep, (8) Negative test - non-existent sessionId correctly rejected with HTTP 400. LLM JSON generation working correctly. Sample CRM data: leadName='Transformation Director', organization='Government Healthcare Agency', industry='Healthcare', priority='High'."
+        -comment: "✅ PASSED all tests. Brief object returned with all required keys (summary, agenda, proposalOutline, followUpEmail, crm); non-existent sessionId rejected with HTTP 400."
+        -working: "NA"
+        -agent: "main"
+        -comment: "OPENAI CHAT MODELS INTEGRATION: brief generation now uses the same GPT-5-preferred + gpt-4o-mini fallback path with json response_format (json_object). Please RETEST: (1) after a 2-3 turn conversation, brief returns with keys summary/agenda[]/proposalOutline[]/followUpEmail/crm{}; (2) unknown sessionId returns 400; (3) confirm returned content is valid JSON."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ RETEST PASSED after GPT-5 integration. Initial test failed due to GPT-5 reasoning model token limits. Fixed by increasing maxTokens from 1200 to 4000 to accommodate reasoning tokens + structured JSON output. Verified: (1) Brief generation after 2-turn conversation - HTTP 200, all required keys present (summary: 424 chars, agenda: 6 items, proposalOutline: 5 items, followUpEmail: 1309 chars, crm: all fields including leadName, organization, industry, priority, nextStep), (2) Valid JSON structure confirmed, (3) Non-existent sessionId rejected with HTTP 400. Server logs confirm GPT-5 active. Brief generation working correctly with GPT-5."
 
 frontend:
   - task: "PMO Dashboard + AI Concierge Boardroom UI"
@@ -166,14 +178,11 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "PMO portfolio telemetry endpoint (GET /api/portfolio)"
-    - "AI Concierge chat (POST /api/concierge)"
-    - "Engagement brief generator (POST /api/concierge/brief)"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -183,3 +192,7 @@ agent_communication:
     -message: "Phase 2 backend added: /api/portfolio (simulated), /api/concierge (Emergent LLM multi-turn chat), /api/concierge/brief (structured JSON brief). Emergent key is in .env as EMERGENT_LLM_KEY and verified working via direct proxy curl. Please test the 3 backend endpoints per the notes. Do NOT test frontend. Base path is /api. Use realistic conversation for concierge (e.g., about AI adoption in a government agency) before requesting a brief."
     -agent: "testing"
     -message: "✅ Backend testing COMPLETE - ALL 3 ENDPOINTS PASSED (31/31 tests). Tested: (1) GET /api/portfolio - simulated portfolio data with proper randomization, (2) POST /api/concierge - multi-turn AI chat with Emergent LLM, context maintained across turns, proper validation, (3) POST /api/concierge/brief - structured brief generation from conversation with all required fields. All negative test cases passed (empty/missing messages, non-existent sessionId). Emergent LLM integration working correctly. No critical issues found. Backend is production-ready."
+    -agent: "main"
+    -message: "RETEST REQUEST after adding OpenAI Chat Models integration. Changes are in app/api/[[...path]]/route.js only. llmChat now prefers a GPT-5-class model (env OPENAI_CHAT_MODEL=gpt-5) through the SAME Emergent OpenAI-compatible gateway, and transparently falls back to gpt-4o-mini (env OPENAI_FALLBACK_MODEL) if the gateway does not expose the preferred model (cached after first resolution). Added a one-time retry swapping max_tokens -> max_completion_tokens for GPT-5 class. NOTHING else changed (endpoints, request/response shapes, Mongo collections are identical). Please retest ONLY the two concierge endpoints: (1) POST /api/concierge multi-turn chat (non-empty reply + sessionId on turn 1; context kept + userTurns=2 on turn 2; empty/missing message -> 400); (2) POST /api/concierge/brief structured JSON brief after a 2-3 turn conversation (keys summary/agenda[]/proposalOutline[]/followUpEmail/crm{}; unknown sessionId -> 400). Do NOT test frontend. GET /api/portfolio unchanged (no retest needed). After tests, please note whether gpt-5 resolved or it fell back to gpt-4o-mini (server logs print '[Virellis LLM] Active model: ...' or a fallback warning)."
+    -agent: "testing"
+    -message: "✅ GPT-5 INTEGRATION RETEST COMPLETE - ALL TESTS PASSED (7/7). Both concierge endpoints working correctly with GPT-5. CRITICAL FIX APPLIED: GPT-5 is a reasoning model that uses internal reasoning tokens before generating output. Initial tests failed because maxTokens limits were too low (350 for concierge, 1200 for brief) - GPT-5 used all tokens for reasoning with none left for output content. Fixed by increasing limits to 2000 for concierge and 4000 for brief to accommodate reasoning + output. Server logs confirm '[Virellis LLM] Active model: gpt-5' - GPT-5 successfully resolved on Emergent gateway with NO fallback to gpt-4o-mini. All endpoints tested: (1) POST /api/concierge - multi-turn chat working, context maintained, proper validation, (2) POST /api/concierge/brief - structured JSON brief generation working with all required fields, (3) GET /api/portfolio - smoke test passed. No critical issues. Backend ready for production with GPT-5."

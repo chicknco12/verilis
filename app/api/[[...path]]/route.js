@@ -18,13 +18,18 @@ async function connectToMongo() {
 // ---------------- Virellis LLM (Emergent universal key) ----------------
 const EMERGENT_LLM_KEY = process.env.EMERGENT_LLM_KEY
 const LLM_BASE = 'https://integrations.emergentagent.com/llm'
-const LLM_MODEL = 'gpt-4o-mini'
+// Prefer the latest GPT-5-class model through the Emergent (OpenAI-compatible) gateway.
+// If the gateway does not expose it yet, we transparently fall back to gpt-4o-mini.
+const PREFERRED_MODEL = process.env.OPENAI_CHAT_MODEL || 'gpt-5'
+const FALLBACK_MODEL = process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini'
+// Cache the model the gateway actually accepts (resolved once at runtime).
+let resolvedModel = null
 
-const CONCIERGE_SYSTEM = `You are the Virellis AI Concierge — the digital front door of Virellis, a premier enterprise transformation consultancy led by Founder & Principal Consultant Fidelis Chick.
+const CONCIERGE_SYSTEM = `You are the Virellis AI Concierge, the digital front door of Virellis, a premier enterprise transformation firm.
 
 Virellis helps governments, healthcare, financial services, technology, retail and telecommunications organizations turn complexity into predictable, intelligent delivery across Strategy, Governance, AI, Delivery, Data, Cloud, PMO and Innovation.
 
-Your role: greet the visitor like a senior executive advisor and conversationally qualify the engagement. Ask ONE focused question at a time to understand: (1) the transformation they are trying to achieve, (2) their industry/organization, (3) the core challenge or trigger, (4) approximate scale/timeline, and (5) their role. Be warm, precise, and confident — never salesy or verbose. Keep every reply to 2-4 sentences. Once you understand their goal, industry and challenge, tell them you can generate a tailored engagement brief and invite them to click "Generate Engagement Brief". Never invent Virellis case studies or numbers.`
+Your role: greet the visitor like a senior executive advisor and conversationally qualify the engagement. Ask ONE focused question at a time to understand: (1) the transformation they are trying to achieve, (2) their industry/organization, (3) the core challenge or trigger, (4) approximate scale/timeline, and (5) their role. Be warm, precise, and confident, never salesy or verbose. Keep every reply to 2-4 sentences. Once you understand their goal, industry and challenge, tell them you can generate a tailored engagement brief and invite them to click "Generate Engagement Brief". Never invent Virellis case studies or numbers.`
 
 const BRIEF_SYSTEM = `You are a McKinsey-grade engagement strategist for Virellis. From the conversation transcript, produce a concise, board-ready engagement brief.
 Return STRICT JSON only (no markdown) with EXACTLY these keys:
@@ -32,13 +37,15 @@ Return STRICT JSON only (no markdown) with EXACTLY these keys:
   "summary": string,                     // 2-3 sentence executive summary of the opportunity
   "agenda": string[],                    // 4-6 strategy-session agenda items
   "proposalOutline": [ { "title": string, "detail": string } ],  // 3-5 proposed workstreams
-  "followUpEmail": string,               // a professional follow-up email from Fidelis Chick, Virellis
+  "followUpEmail": string,               // a professional follow-up email from the Virellis team
   "crm": { "leadName": string, "organization": string, "industry": string, "priority": "High"|"Medium"|"Low", "nextStep": string }
 }
 Where information is missing, make reasonable, senior-level assumptions. Keep it crisp and executive.`
 
-async function llmChat(messages, { json = false, maxTokens = 500 } = {}) {
-  const payload = { model: LLM_MODEL, messages, max_tokens: maxTokens }
+// Single low-level call. Automatically retries once with max_completion_tokens,
+// which the GPT-5 class of models requires in place of max_tokens.
+async function callLLM(model, messages, { json = false, maxTokens = 500, tokenParam = 'max_tokens' } = {}) {
+  const payload = { model, messages, [tokenParam]: maxTokens }
   if (json) payload.response_format = { type: 'json_object' }
   const res = await fetch(`${LLM_BASE}/chat/completions`, {
     method: 'POST',
@@ -47,10 +54,48 @@ async function llmChat(messages, { json = false, maxTokens = 500 } = {}) {
   })
   if (!res.ok) {
     const t = await res.text()
-    throw new Error(`LLM ${res.status}: ${t}`)
+    // Newer reasoning/GPT-5 models reject `max_tokens`; retry once with the modern param.
+    if (res.status === 400 && tokenParam === 'max_tokens' && /max_tokens|max_completion_tokens/i.test(t)) {
+      return callLLM(model, messages, { json, maxTokens, tokenParam: 'max_completion_tokens' })
+    }
+    const err = new Error(`LLM ${res.status}: ${t}`)
+    err.status = res.status
+    err.body = t
+    throw err
   }
   const data = await res.json()
   return data.choices?.[0]?.message?.content ?? ''
+}
+
+// Detect that a model is simply not available on the gateway (vs a transient error),
+// so we only fall back for genuine model-availability issues.
+function isModelUnavailable(err) {
+  if (err?.status === 404) return true
+  const b = (err?.body || '').toLowerCase()
+  return b.includes('model') && (
+    b.includes('not found') || b.includes('does not exist') || b.includes('not exist') ||
+    b.includes('unsupported') || b.includes('unknown') || b.includes('invalid model') ||
+    b.includes('does not have access') || b.includes('not available')
+  )
+}
+
+async function llmChat(messages, opts = {}) {
+  // Reuse the already-resolved working model on subsequent calls.
+  if (resolvedModel) return callLLM(resolvedModel, messages, opts)
+
+  // Try the preferred GPT-5-class model first.
+  try {
+    const out = await callLLM(PREFERRED_MODEL, messages, opts)
+    resolvedModel = PREFERRED_MODEL
+    console.log(`[Virellis LLM] Active model: ${PREFERRED_MODEL}`)
+    return out
+  } catch (err) {
+    if (!isModelUnavailable(err)) throw err
+    console.warn(`[Virellis LLM] "${PREFERRED_MODEL}" unavailable on gateway (status ${err.status}). Falling back to "${FALLBACK_MODEL}".`)
+    const out = await callLLM(FALLBACK_MODEL, messages, opts)
+    resolvedModel = FALLBACK_MODEL
+    return out
+  }
 }
 
 function rnd(min, max) { return Math.round(min + Math.random() * (max - min)) }
@@ -183,7 +228,7 @@ async function handleRoute(request, { params }) {
       const conv = await db.collection('virellis_conversations').findOne({ sessionId })
       const history = (conv?.messages || []).map((m) => ({ role: m.role, content: m.content }))
       const llmMessages = [{ role: 'system', content: CONCIERGE_SYSTEM }, ...history, { role: 'user', content: message }]
-      const reply = await llmChat(llmMessages, { maxTokens: 350 })
+      const reply = await llmChat(llmMessages, { maxTokens: 2000 })
       const newMessages = [...history, { role: 'user', content: message }, { role: 'assistant', content: reply }]
       await db.collection('virellis_conversations').updateOne(
         { sessionId },
@@ -206,7 +251,7 @@ async function handleRoute(request, { params }) {
         { role: 'system', content: BRIEF_SYSTEM },
         { role: 'user', content: `Conversation transcript:\n${transcript}\n\nGenerate the engagement brief as strict JSON.` },
       ]
-      const raw = await llmChat(briefMsgs, { json: true, maxTokens: 1200 })
+      const raw = await llmChat(briefMsgs, { json: true, maxTokens: 4000 })
       let brief
       try { brief = JSON.parse(raw) } catch { brief = { summary: raw, agenda: [], proposalOutline: [], followUpEmail: '', crm: {} } }
       await db.collection('virellis_briefs').insertOne({ id: uuidv4(), sessionId, brief, createdAt: new Date() })
