@@ -15,19 +15,21 @@ async function connectToMongo() {
   return db
 }
 
-// ---------------- Virellis LLM (Anthropic Claude) ----------------
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
-const ANTHROPIC_API_BASE = 'https://api.anthropic.com/v1/messages'
-const ANTHROPIC_VERSION = '2023-06-01'
-// Default to Claude Sonnet 5; override with ANTHROPIC_MODEL for Haiku (cheaper/faster)
-// or Opus (highest quality) instead.
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5'
+// ---------------- Virellis LLM (Emergent universal key) ----------------
+const EMERGENT_LLM_KEY = process.env.EMERGENT_LLM_KEY
+const LLM_BASE = 'https://integrations.emergentagent.com/llm'
+// Prefer the latest GPT-5-class model through the Emergent (OpenAI-compatible) gateway.
+// If the gateway does not expose it yet, we transparently fall back to gpt-4o-mini.
+const PREFERRED_MODEL = process.env.OPENAI_CHAT_MODEL || 'gpt-5'
+const FALLBACK_MODEL = process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini'
+// Cache the model the gateway actually accepts (resolved once at runtime).
+let resolvedModel = null
 
-const CONCIERGE_SYSTEM = `You are the Virellis AI Concierge — the digital front door of Virellis, a premier enterprise transformation consultancy led by Founder & Principal Consultant Fidelis Chick.
+const CONCIERGE_SYSTEM = `You are the Virellis AI Concierge, the digital front door of Virellis, a premier enterprise transformation firm.
 
 Virellis helps governments, healthcare, financial services, technology, retail and telecommunications organizations turn complexity into predictable, intelligent delivery across Strategy, Governance, AI, Delivery, Data, Cloud, PMO and Innovation.
 
-Your role: greet the visitor like a senior executive advisor and conversationally qualify the engagement. Ask ONE focused question at a time to understand: (1) the transformation they are trying to achieve, (2) their industry/organization, (3) the core challenge or trigger, (4) approximate scale/timeline, and (5) their role. Be warm, precise, and confident — never salesy or verbose. Keep every reply to 2-4 sentences. Once you understand their goal, industry and challenge, tell them you can generate a tailored engagement brief and invite them to click "Generate Engagement Brief". Never invent Virellis case studies or numbers.`
+Your role: greet the visitor like a senior executive advisor and conversationally qualify the engagement. Ask ONE focused question at a time to understand: (1) the transformation they are trying to achieve, (2) their industry/organization, (3) the core challenge or trigger, (4) approximate scale/timeline, and (5) their role. Be warm, precise, and confident, never salesy or verbose. Keep every reply to 2-4 sentences. Once you understand their goal, industry and challenge, tell them you can generate a tailored engagement brief and invite them to click "Generate Engagement Brief". Never invent Virellis case studies or numbers.`
 
 const BRIEF_SYSTEM = `You are a McKinsey-grade engagement strategist for Virellis. From the conversation transcript, produce a concise, board-ready engagement brief.
 Return STRICT JSON only (no markdown) with EXACTLY these keys:
@@ -35,31 +37,65 @@ Return STRICT JSON only (no markdown) with EXACTLY these keys:
   "summary": string,                     // 2-3 sentence executive summary of the opportunity
   "agenda": string[],                    // 4-6 strategy-session agenda items
   "proposalOutline": [ { "title": string, "detail": string } ],  // 3-5 proposed workstreams
-  "followUpEmail": string,               // a professional follow-up email from Fidelis Chick, Virellis
+  "followUpEmail": string,               // a professional follow-up email from the Virellis team
   "crm": { "leadName": string, "organization": string, "industry": string, "priority": "High"|"Medium"|"Low", "nextStep": string }
 }
 Where information is missing, make reasonable, senior-level assumptions. Keep it crisp and executive.`
 
-// Calls Anthropic's Messages API directly. `system` is Anthropic's dedicated
-// system-prompt field (not a message in the array). `messages` must be a
-// strictly alternating user/assistant array with no system role inside it.
-async function llmChat(system, messages, { maxTokens = 500 } = {}) {
-  const payload = { model: ANTHROPIC_MODEL, system, messages, max_tokens: maxTokens }
-  const res = await fetch(ANTHROPIC_API_BASE, {
+// Single low-level call. Automatically retries once with max_completion_tokens,
+// which the GPT-5 class of models requires in place of max_tokens.
+async function callLLM(model, messages, { json = false, maxTokens = 500, tokenParam = 'max_tokens' } = {}) {
+  const payload = { model, messages, [tokenParam]: maxTokens }
+  if (json) payload.response_format = { type: 'json_object' }
+  const res = await fetch(`${LLM_BASE}/chat/completions`, {
     method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': ANTHROPIC_VERSION,
-      'content-type': 'application/json',
-    },
+    headers: { Authorization: `Bearer ${EMERGENT_LLM_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
   if (!res.ok) {
     const t = await res.text()
-    throw new Error(`Anthropic API ${res.status}: ${t}`)
+    // Newer reasoning/GPT-5 models reject `max_tokens`; retry once with the modern param.
+    if (res.status === 400 && tokenParam === 'max_tokens' && /max_tokens|max_completion_tokens/i.test(t)) {
+      return callLLM(model, messages, { json, maxTokens, tokenParam: 'max_completion_tokens' })
+    }
+    const err = new Error(`LLM ${res.status}: ${t}`)
+    err.status = res.status
+    err.body = t
+    throw err
   }
   const data = await res.json()
-  return (data.content || []).map((block) => block.text || '').join('')
+  return data.choices?.[0]?.message?.content ?? ''
+}
+
+// Detect that a model is simply not available on the gateway (vs a transient error),
+// so we only fall back for genuine model-availability issues.
+function isModelUnavailable(err) {
+  if (err?.status === 404) return true
+  const b = (err?.body || '').toLowerCase()
+  return b.includes('model') && (
+    b.includes('not found') || b.includes('does not exist') || b.includes('not exist') ||
+    b.includes('unsupported') || b.includes('unknown') || b.includes('invalid model') ||
+    b.includes('does not have access') || b.includes('not available')
+  )
+}
+
+async function llmChat(messages, opts = {}) {
+  // Reuse the already-resolved working model on subsequent calls.
+  if (resolvedModel) return callLLM(resolvedModel, messages, opts)
+
+  // Try the preferred GPT-5-class model first.
+  try {
+    const out = await callLLM(PREFERRED_MODEL, messages, opts)
+    resolvedModel = PREFERRED_MODEL
+    console.log(`[Virellis LLM] Active model: ${PREFERRED_MODEL}`)
+    return out
+  } catch (err) {
+    if (!isModelUnavailable(err)) throw err
+    console.warn(`[Virellis LLM] "${PREFERRED_MODEL}" unavailable on gateway (status ${err.status}). Falling back to "${FALLBACK_MODEL}".`)
+    const out = await callLLM(FALLBACK_MODEL, messages, opts)
+    resolvedModel = FALLBACK_MODEL
+    return out
+  }
 }
 
 function rnd(min, max) { return Math.round(min + Math.random() * (max - min)) }
@@ -110,11 +146,8 @@ function generatePortfolio() {
   }
 }
 
-// ---------------- CORS ----------------
-// Only emit CORS headers when CORS_ORIGINS is explicitly configured. Pairing a
-// wildcard origin with Allow-Credentials: true is an invalid/unsafe combination,
-// so we never do both. With no CORS_ORIGINS set, the API is same-origin only,
-// which is correct for this app (the frontend and API share an origin).
+// Only emit CORS headers when explicitly configured. Same-origin is the safe
+// default for this app, and a wildcard origin cannot be used with credentials.
 const CORS_ORIGINS = process.env.CORS_ORIGINS
 
 function handleCORS(response) {
@@ -128,47 +161,40 @@ function handleCORS(response) {
   return response
 }
 
-// ---------------- Basic in-memory rate limiting ----------------
-// Best-effort, per-instance rate limiting to stop trivial abuse of the LLM-backed
-// endpoints. This resets on redeploy/restart and does not share state across
-// multiple server instances — for multi-instance production deployments, swap
-// this for a shared store (e.g. Redis/Upstash) keyed the same way.
 const rateLimitBuckets = new Map()
+const MAX_MESSAGE_LENGTH = 2000
+const MAX_HISTORY_MESSAGES = 40
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function clientKey(request) {
-  const fwd = request.headers.get('x-forwarded-for')
-  const ip = fwd ? fwd.split(',')[0].trim() : request.headers.get('x-real-ip') || 'unknown'
-  return ip
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  return forwardedFor ? forwardedFor.split(',')[0].trim() : request.headers.get('x-real-ip') || 'unknown'
 }
 
 function checkRateLimit(key, max, windowMs) {
   const now = Date.now()
-  // Opportunistic cleanup so the map doesn't grow unbounded.
   if (rateLimitBuckets.size > 5000) {
-    for (const [k, v] of rateLimitBuckets) {
-      if (v.resetAt <= now) rateLimitBuckets.delete(k)
+    for (const [bucketKey, bucket] of rateLimitBuckets) {
+      if (bucket.resetAt <= now) rateLimitBuckets.delete(bucketKey)
     }
   }
-  const entry = rateLimitBuckets.get(key)
-  if (!entry || entry.resetAt <= now) {
+  const bucket = rateLimitBuckets.get(key)
+  if (!bucket || bucket.resetAt <= now) {
     rateLimitBuckets.set(key, { count: 1, resetAt: now + windowMs })
     return true
   }
-  if (entry.count >= max) return false
-  entry.count += 1
+  if (bucket.count >= max) return false
+  bucket.count += 1
   return true
 }
 
-// ---------------- Input validation helpers ----------------
-// sessionId is used directly in Mongo findOne/updateOne filters. It must be a
-// plain string (never an object — that would let a client inject Mongo query
-// operators like {"$ne": null} and read/overwrite other sessions' data).
 function isValidSessionId(value) {
   return typeof value === 'string' && value.length > 0 && value.length <= 100 && /^[a-zA-Z0-9_-]+$/.test(value)
 }
 
-const MAX_MESSAGE_LENGTH = 2000
-const MAX_HISTORY_MESSAGES = 40 // cap stored turns per session to bound document growth
+function isValidEmail(value) {
+  return typeof value === 'string' && value.length > 0 && value.length <= 254 && EMAIL_RE.test(value)
+}
 
 // OPTIONS handler for CORS
 export async function OPTIONS() {
@@ -196,18 +222,17 @@ async function handleRoute(request, { params }) {
     // Status endpoints - POST /api/status
     if (route === '/status' && method === 'POST') {
       const body = await request.json()
-
+      
       if (typeof body.client_name !== 'string' || !body.client_name.trim()) {
         return handleCORS(NextResponse.json(
-          { error: "client_name is required" },
+          { error: "client_name is required" }, 
           { status: 400 }
         ))
       }
-      const client_name = body.client_name.trim().slice(0, 200)
 
       const statusObj = {
         id: uuidv4(),
-        client_name,
+        client_name: body.client_name.trim().slice(0, 200),
         timestamp: new Date()
       }
 
@@ -238,20 +263,16 @@ async function handleRoute(request, { params }) {
       if (!checkRateLimit(`concierge:${clientKey(request)}`, 15, 60_000)) {
         return handleCORS(NextResponse.json({ error: 'Too many requests. Please slow down and try again shortly.' }, { status: 429 }))
       }
-
       const body = await request.json()
-      const rawSessionId = body.sessionId
-      const sessionId = isValidSessionId(rawSessionId) ? rawSessionId : uuidv4()
-
+      const sessionId = isValidSessionId(body.sessionId) ? body.sessionId : uuidv4()
       if (typeof body.message !== 'string' || !body.message.trim()) {
         return handleCORS(NextResponse.json({ error: 'message is required' }, { status: 400 }))
       }
       const message = body.message.trim().slice(0, MAX_MESSAGE_LENGTH)
-
       const conv = await db.collection('virellis_conversations').findOne({ sessionId })
       const history = (conv?.messages || []).map((m) => ({ role: m.role, content: m.content }))
-      const llmMessages = [...history, { role: 'user', content: message }]
-      const reply = await llmChat(CONCIERGE_SYSTEM, llmMessages, { maxTokens: 350 })
+      const llmMessages = [{ role: 'system', content: CONCIERGE_SYSTEM }, ...history, { role: 'user', content: message }]
+      const reply = await llmChat(llmMessages, { maxTokens: 2000 })
       const newMessages = [...history, { role: 'user', content: message }, { role: 'assistant', content: reply }].slice(-MAX_HISTORY_MESSAGES)
       await db.collection('virellis_conversations').updateOne(
         { sessionId },
@@ -266,7 +287,6 @@ async function handleRoute(request, { params }) {
       if (!checkRateLimit(`brief:${clientKey(request)}`, 5, 600_000)) {
         return handleCORS(NextResponse.json({ error: 'Too many requests. Please try again in a few minutes.' }, { status: 429 }))
       }
-
       const body = await request.json()
       const sessionId = body.sessionId
       if (!isValidSessionId(sessionId)) {
@@ -277,17 +297,41 @@ async function handleRoute(request, { params }) {
         return handleCORS(NextResponse.json({ error: 'no conversation found' }, { status: 400 }))
       }
       const transcript = conv.messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n')
-      // Prefill the assistant turn with '{' — a standard technique for coaxing
-      // Claude into emitting raw JSON with no markdown fences or preamble.
       const briefMsgs = [
+        { role: 'system', content: BRIEF_SYSTEM },
         { role: 'user', content: `Conversation transcript:\n${transcript}\n\nGenerate the engagement brief as strict JSON.` },
-        { role: 'assistant', content: '{' },
       ]
-      const raw = await llmChat(BRIEF_SYSTEM, briefMsgs, { maxTokens: 1200 })
+      const raw = await llmChat(briefMsgs, { json: true, maxTokens: 4000 })
       let brief
-      try { brief = JSON.parse('{' + raw) } catch { brief = { summary: raw, agenda: [], proposalOutline: [], followUpEmail: '', crm: {} } }
+      try { brief = JSON.parse(raw) } catch { brief = { summary: raw, agenda: [], proposalOutline: [], followUpEmail: '', crm: {} } }
       await db.collection('virellis_briefs').insertOne({ id: uuidv4(), sessionId, brief, createdAt: new Date() })
       return handleCORS(NextResponse.json({ brief }))
+    }
+
+    if (route === '/contact' && method === 'POST') {
+      if (!checkRateLimit(`contact:${clientKey(request)}`, 5, 600_000)) {
+        return handleCORS(NextResponse.json({ error: 'Too many requests. Please try again in a few minutes.' }, { status: 429 }))
+      }
+      const body = await request.json()
+      if (typeof body.name !== 'string' || !body.name.trim()) {
+        return handleCORS(NextResponse.json({ error: 'name is required' }, { status: 400 }))
+      }
+      if (!isValidEmail(body.email)) {
+        return handleCORS(NextResponse.json({ error: 'a valid email is required' }, { status: 400 }))
+      }
+      if (typeof body.message !== 'string' || !body.message.trim()) {
+        return handleCORS(NextResponse.json({ error: 'message is required' }, { status: 400 }))
+      }
+      const contact = {
+        id: uuidv4(),
+        name: body.name.trim().slice(0, 200),
+        email: body.email.trim().slice(0, 254),
+        organization: typeof body.organization === 'string' ? body.organization.trim().slice(0, 200) : '',
+        message: body.message.trim().slice(0, MAX_MESSAGE_LENGTH),
+        createdAt: new Date(),
+      }
+      await db.collection('virellis_contacts').insertOne(contact)
+      return handleCORS(NextResponse.json(contact))
     }
 
     // Route not found

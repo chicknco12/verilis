@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
 import Lenis from 'lenis'
 import {
-  Compass, ShieldCheck, Sparkles, Rocket, Database, Cloud,
-  LayoutDashboard, Lightbulb, ArrowRight, ArrowUpRight, Plus, Command,
+  Compass, ShieldCheck, Sparkles, Rocket, Database, RefreshCcw,
+  LayoutDashboard, Users, ArrowRight, ArrowUpRight, Plus, Command,
 } from 'lucide-react'
 import { content } from '@/lib/virellis/content'
 import { scrollStore } from '@/lib/virellis/scrollStore'
@@ -18,10 +18,29 @@ import LeadershipConstellation from './LeadershipConstellation'
 import TestimonialsOrbit from './TestimonialsOrbit'
 import GovernanceRoom from './GovernanceRoom'
 import TransformationMode from './TransformationMode'
-import TransformationJourney from './TransformationJourney'
+import ContactSection from './ContactSection'
+const PmoDashboard = dynamic(() => import('./PmoDashboard'), { ssr: false })
 const ConciergeBoardroom = dynamic(() => import('./ConciergeBoardroom'), { ssr: false })
 
-const ICONS = { Compass, ShieldCheck, Sparkles, Rocket, Database, Cloud, LayoutDashboard, Lightbulb }
+const ICONS = { Compass, ShieldCheck, Sparkles, Rocket, Database, RefreshCcw, LayoutDashboard, Users }
+
+// Only footer links with a real section on the page get wired up; the rest
+// (Insights, Playbooks, Approach, Founder) render as plain text since there
+// is nowhere for them to go yet.
+const FOOTER_LINK_TARGETS = {
+  'Strategy': '#studio',
+  'Agility': '#studio',
+  'Culture & Change': '#studio',
+  'AI Adoption': '#studio',
+  'Governance': '#governance',
+  'Delivery': '#framework',
+  'Frameworks': '#framework',
+  'AI Concierge': '#concierge',
+  'Strategy Session': '#command',
+  'Services': '#studio',
+  'PMO Dashboard': '#command',
+  'Contact': '#contact',
+}
 
 /* ---------------- Preloader (arrival experience) ---------------- */
 function Preloader() {
@@ -51,7 +70,7 @@ function Preloader() {
         animate={{ opacity: 1 }}
         transition={{ delay: 1.1, duration: 0.8 }}
       >
-        ENTERPRISE TRANSFORMATION HEADQUARTERS
+        {content.hero.eyebrow}
       </motion.div>
       <motion.div
         className="mt-8 h-px bg-gradient-to-r from-transparent via-gold to-transparent"
@@ -242,7 +261,7 @@ export default function Experience() {
               transition={{ delay: HERO_DELAY + 0.15, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
             >
               The operating system for{' '}
-              <span className="text-gold-gradient">enterprise transformation.</span>
+              <span className="text-gold-gradient">organizational transformation and agility.</span>
             </motion.h1>
             <motion.p
               className="mx-auto mt-7 max-w-2xl text-base md:text-lg leading-relaxed text-muted-foreground"
@@ -347,6 +366,39 @@ export default function Experience() {
           </div>
         </section>
 
+        {/* COMMAND CENTER */}
+        <section id="command" className="relative py-32">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <Reveal className="max-w-3xl">
+              <div className="flex items-center gap-2 text-[11px] tracking-[0.45em] text-gold/80">
+                <LayoutDashboard className="h-4 w-4" /> {content.command.eyebrow}
+              </div>
+              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
+                {content.command.title}
+              </h2>
+              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.command.subtitle}</p>
+            </Reveal>
+
+            <Reveal delay={0.08} className="mt-8 flex flex-wrap gap-2">
+              {content.command.modules.map((m) => (
+                <span key={m} className="text-[11px] rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-white/60">
+                  {m}
+                </span>
+              ))}
+            </Reveal>
+
+            <Reveal delay={0.14} className="mt-10">
+              <PmoDashboard />
+            </Reveal>
+
+            <Reveal delay={0.18} className="mt-10 flex justify-center">
+              <button onClick={() => scrollTo('#contact')} className="btn-gold inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium">
+                {content.command.cta} <ArrowRight className="h-4 w-4" />
+              </button>
+            </Reveal>
+          </div>
+        </section>
+
         {/* METRICS */}
         <section id="capabilities" className="relative py-28 bg-paper">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
@@ -380,64 +432,6 @@ export default function Experience() {
                 ))}
               </div>
             </Reveal>
-          </div>
-        </section>
-
-        {/* FOUNDER */}
-        <section id="founder" className="relative py-32 bg-[#F4F6F8]">
-          <div className="mx-auto max-w-7xl px-6 md:px-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              <Reveal>
-                <div className="relative">
-                  <div className="absolute -inset-4 rounded-3xl bg-gold/10 blur-2xl" />
-                  <div className="relative overflow-hidden rounded-3xl border border-white/10">
-                    <img
-                      src={content.founder.image}
-                      alt={content.founder.name}
-                      className="h-[520px] w-full object-cover object-top"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-graphite-950 via-transparent to-transparent" />
-                    <div className="absolute bottom-6 left-6">
-                      <div className="font-display text-xl font-semibold">{content.founder.name}</div>
-                      <div className="text-sm text-gold">{content.founder.role}</div>
-                    </div>
-                  </div>
-                </div>
-              </Reveal>
-              <Reveal delay={0.12}>
-                <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.founder.eyebrow}</p>
-                <h2 className="font-display mt-5 text-lg md:text-xl font-medium leading-relaxed tracking-tight text-foreground/90">
-                  {content.founder.bio.map((p, i) => (
-                    <span key={i} className={i > 0 ? 'block mt-4' : 'block'}>{p}</span>
-                  ))}
-                </h2>
-                <blockquote className="mt-8 border-l-2 border-gold/50 pl-5 text-lg text-muted-foreground italic">
-                  {'\u201C'}{content.founder.quote}{'\u201D'}
-                </blockquote>
-                <div className="mt-10 grid grid-cols-3 gap-4">
-                  {content.founder.stats.map((s) => (
-                    <div key={s.k} className="glass rounded-xl p-4">
-                      <div className="font-display text-xl font-semibold text-foreground">{s.k}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{s.v}</div>
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </section>
-
-        {/* TRANSFORMATION JOURNEY */}
-        <section id="journey" className="relative py-32">
-          <div className="mx-auto max-w-7xl px-6 md:px-10">
-            <Reveal className="max-w-3xl">
-              <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.journey.eyebrow}</p>
-              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
-                {content.journey.title}
-              </h2>
-              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.journey.subtitle}</p>
-            </Reveal>
-            <TransformationJourney />
           </div>
         </section>
 
@@ -499,6 +493,22 @@ export default function Experience() {
           </div>
         </section>
 
+        {/* CONTACT */}
+        <section id="contact" className="relative py-28 bg-paper">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <Reveal className="max-w-3xl">
+              <p className="text-[11px] tracking-[0.45em] text-gold/80">{content.contact.eyebrow}</p>
+              <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
+                {content.contact.title}
+              </h2>
+              <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.contact.subtitle}</p>
+            </Reveal>
+            <div className="mt-12">
+              <ContactSection />
+            </div>
+          </div>
+        </section>
+
         {/* FOOTER */}
         <footer className="relative border-t border-white/5 py-16">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
@@ -511,18 +521,30 @@ export default function Experience() {
                 <div key={c.title}>
                   <div className="text-xs tracking-[0.3em] text-white/40">{c.title.toUpperCase()}</div>
                   <ul className="mt-4 space-y-2.5">
-                    {c.links.map((l) => (
-                      <li key={l}>
-                        <span className="link-underline text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">{l}</span>
-                      </li>
-                    ))}
+                    {c.links.map((l) => {
+                      const href = FOOTER_LINK_TARGETS[l]
+                      return (
+                        <li key={l}>
+                          {href ? (
+                            <button
+                              onClick={() => scrollTo(href)}
+                              className="link-underline text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            >
+                              {l}
+                            </button>
+                          ) : (
+                            <span className="text-sm text-muted-foreground/60">{l}</span>
+                          )}
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               ))}
             </div>
             <div className="mt-14 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-white/5 pt-8 text-xs text-white/35">
               <span>{'\u00A9'} {new Date().getFullYear()} Virellis. {content.brand.tagline}</span>
-              <span className="tracking-[0.3em]">ENTERPRISE TRANSFORMATION HEADQUARTERS</span>
+              <span className="tracking-[0.3em]">{content.hero.eyebrow}</span>
             </div>
           </div>
         </footer>

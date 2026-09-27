@@ -19,7 +19,8 @@ export default function DomainRoom({ domain, onClose }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto px-4 py-10 md:py-16"
+      className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto overscroll-contain px-4 py-10 md:py-16"
+      data-lenis-prevent
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

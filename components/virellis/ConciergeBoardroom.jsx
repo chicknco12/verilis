@@ -82,7 +82,7 @@ export default function ConciergeBoardroom() {
           <span className="ml-auto text-[11px] text-white/35">Enterprise Boardroom</span>
         </div>
 
-        <div ref={scroller} className="flex-1 overflow-y-auto px-5 py-4 space-y-3" style={{ maxHeight: 360 }}>
+        <div ref={scroller} className="flex-1 overflow-y-auto px-5 py-4 space-y-3" style={{ maxHeight: 360 }} data-lenis-prevent>
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${m.role === 'user' ? 'bg-gold text-graphite-950 rounded-br-sm' : 'bg-white/[0.05] text-foreground rounded-bl-sm border border-white/8'}`}>
