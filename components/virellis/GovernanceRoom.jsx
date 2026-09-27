@@ -21,6 +21,7 @@ function ArtifactModal({ a, onClose }) {
   return (
     <motion.div
       className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto px-4 py-10 md:py-16"
+      data-lenis-prevent
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
     >
       <div className="fixed inset-0 bg-graphite-950/80 backdrop-blur-md" onClick={onClose} />

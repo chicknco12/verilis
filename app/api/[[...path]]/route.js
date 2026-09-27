@@ -146,13 +146,54 @@ function generatePortfolio() {
   }
 }
 
-// Helper function to handle CORS
+// Only emit CORS headers when explicitly configured. Same-origin is the safe
+// default for this app, and a wildcard origin cannot be used with credentials.
+const CORS_ORIGINS = process.env.CORS_ORIGINS
+
 function handleCORS(response) {
-  response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || '*')
+  if (CORS_ORIGINS) {
+    response.headers.set('Access-Control-Allow-Origin', CORS_ORIGINS)
+    response.headers.set('Access-Control-Allow-Credentials', 'true')
+    response.headers.set('Vary', 'Origin')
+  }
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  response.headers.set('Access-Control-Allow-Credentials', 'true')
   return response
+}
+
+const rateLimitBuckets = new Map()
+const MAX_MESSAGE_LENGTH = 2000
+const MAX_HISTORY_MESSAGES = 40
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function clientKey(request) {
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  return forwardedFor ? forwardedFor.split(',')[0].trim() : request.headers.get('x-real-ip') || 'unknown'
+}
+
+function checkRateLimit(key, max, windowMs) {
+  const now = Date.now()
+  if (rateLimitBuckets.size > 5000) {
+    for (const [bucketKey, bucket] of rateLimitBuckets) {
+      if (bucket.resetAt <= now) rateLimitBuckets.delete(bucketKey)
+    }
+  }
+  const bucket = rateLimitBuckets.get(key)
+  if (!bucket || bucket.resetAt <= now) {
+    rateLimitBuckets.set(key, { count: 1, resetAt: now + windowMs })
+    return true
+  }
+  if (bucket.count >= max) return false
+  bucket.count += 1
+  return true
+}
+
+function isValidSessionId(value) {
+  return typeof value === 'string' && value.length > 0 && value.length <= 100 && /^[a-zA-Z0-9_-]+$/.test(value)
+}
+
+function isValidEmail(value) {
+  return typeof value === 'string' && value.length > 0 && value.length <= 254 && EMAIL_RE.test(value)
 }
 
 // OPTIONS handler for CORS
@@ -182,7 +223,7 @@ async function handleRoute(request, { params }) {
     if (route === '/status' && method === 'POST') {
       const body = await request.json()
       
-      if (!body.client_name) {
+      if (typeof body.client_name !== 'string' || !body.client_name.trim()) {
         return handleCORS(NextResponse.json(
           { error: "client_name is required" }, 
           { status: 400 }
@@ -191,7 +232,7 @@ async function handleRoute(request, { params }) {
 
       const statusObj = {
         id: uuidv4(),
-        client_name: body.client_name,
+        client_name: body.client_name.trim().slice(0, 200),
         timestamp: new Date()
       }
 
@@ -219,17 +260,20 @@ async function handleRoute(request, { params }) {
 
     // Virellis: AI Concierge (multi-turn lead qualification)
     if (route === '/concierge' && method === 'POST') {
+      if (!checkRateLimit(`concierge:${clientKey(request)}`, 15, 60_000)) {
+        return handleCORS(NextResponse.json({ error: 'Too many requests. Please slow down and try again shortly.' }, { status: 429 }))
+      }
       const body = await request.json()
-      const sessionId = body.sessionId || uuidv4()
-      const message = (body.message || '').toString().slice(0, 4000)
-      if (!message) {
+      const sessionId = isValidSessionId(body.sessionId) ? body.sessionId : uuidv4()
+      if (typeof body.message !== 'string' || !body.message.trim()) {
         return handleCORS(NextResponse.json({ error: 'message is required' }, { status: 400 }))
       }
+      const message = body.message.trim().slice(0, MAX_MESSAGE_LENGTH)
       const conv = await db.collection('virellis_conversations').findOne({ sessionId })
       const history = (conv?.messages || []).map((m) => ({ role: m.role, content: m.content }))
       const llmMessages = [{ role: 'system', content: CONCIERGE_SYSTEM }, ...history, { role: 'user', content: message }]
       const reply = await llmChat(llmMessages, { maxTokens: 2000 })
-      const newMessages = [...history, { role: 'user', content: message }, { role: 'assistant', content: reply }]
+      const newMessages = [...history, { role: 'user', content: message }, { role: 'assistant', content: reply }].slice(-MAX_HISTORY_MESSAGES)
       await db.collection('virellis_conversations').updateOne(
         { sessionId },
         { $set: { sessionId, messages: newMessages, updatedAt: new Date() } },
@@ -240,8 +284,14 @@ async function handleRoute(request, { params }) {
 
     // Virellis: generate engagement brief from a conversation
     if (route === '/concierge/brief' && method === 'POST') {
+      if (!checkRateLimit(`brief:${clientKey(request)}`, 5, 600_000)) {
+        return handleCORS(NextResponse.json({ error: 'Too many requests. Please try again in a few minutes.' }, { status: 429 }))
+      }
       const body = await request.json()
       const sessionId = body.sessionId
+      if (!isValidSessionId(sessionId)) {
+        return handleCORS(NextResponse.json({ error: 'invalid sessionId' }, { status: 400 }))
+      }
       const conv = await db.collection('virellis_conversations').findOne({ sessionId })
       if (!conv || !conv.messages?.length) {
         return handleCORS(NextResponse.json({ error: 'no conversation found' }, { status: 400 }))
@@ -256,6 +306,32 @@ async function handleRoute(request, { params }) {
       try { brief = JSON.parse(raw) } catch { brief = { summary: raw, agenda: [], proposalOutline: [], followUpEmail: '', crm: {} } }
       await db.collection('virellis_briefs').insertOne({ id: uuidv4(), sessionId, brief, createdAt: new Date() })
       return handleCORS(NextResponse.json({ brief }))
+    }
+
+    if (route === '/contact' && method === 'POST') {
+      if (!checkRateLimit(`contact:${clientKey(request)}`, 5, 600_000)) {
+        return handleCORS(NextResponse.json({ error: 'Too many requests. Please try again in a few minutes.' }, { status: 429 }))
+      }
+      const body = await request.json()
+      if (typeof body.name !== 'string' || !body.name.trim()) {
+        return handleCORS(NextResponse.json({ error: 'name is required' }, { status: 400 }))
+      }
+      if (!isValidEmail(body.email)) {
+        return handleCORS(NextResponse.json({ error: 'a valid email is required' }, { status: 400 }))
+      }
+      if (typeof body.message !== 'string' || !body.message.trim()) {
+        return handleCORS(NextResponse.json({ error: 'message is required' }, { status: 400 }))
+      }
+      const contact = {
+        id: uuidv4(),
+        name: body.name.trim().slice(0, 200),
+        email: body.email.trim().slice(0, 254),
+        organization: typeof body.organization === 'string' ? body.organization.trim().slice(0, 200) : '',
+        message: body.message.trim().slice(0, MAX_MESSAGE_LENGTH),
+        createdAt: new Date(),
+      }
+      await db.collection('virellis_contacts').insertOne(contact)
+      return handleCORS(NextResponse.json(contact))
     }
 
     // Route not found
