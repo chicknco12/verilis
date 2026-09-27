@@ -203,7 +203,7 @@ export default function SiteChrome({ children }) {
             </div>
             <div className="mt-14 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground">
               <span>{'\u00A9'} {new Date().getFullYear()} Virellis. {content.brand.tagline}</span>
-              <span className="tracking-[0.3em]">ENTERPRISE TRANSFORMATION HEADQUARTERS</span>
+              <span className="tracking-[0.3em]">ORGANIZATIONAL TRANSFORMATION & AGILITY HEADQUARTERS</span>
             </div>
           </div>
         </footer>

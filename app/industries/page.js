@@ -9,7 +9,7 @@ const App = () => {
       <PageHeader
         eyebrow="INDUSTRIES"
         title="Trusted where the stakes are highest."
-        subtitle="Virellis delivers into regulated, complex, high-accountability environments where transformation cannot afford to fail."
+        subtitle="Virellis brings organizational agility and governed delivery into regulated, complex, high-accountability environments where transformation cannot afford to fail."
       />
 
       {/* INDUSTRY GRID */}
@@ -22,7 +22,7 @@ const App = () => {
                   <div className="font-display text-xs tracking-[0.3em] text-gold/80">{String(i + 1).padStart(2, '0')}</div>
                   <h3 className="mt-4 font-display text-xl font-semibold tracking-tight">{ind}</h3>
                   <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
-                    Senior delivery leadership, governance and applied intelligence tailored to the regulatory and operating reality of {ind.toLowerCase()}.
+                    Organizational agility, senior delivery leadership and governance tailored to the regulatory and operating reality of {ind.toLowerCase()}.
                   </p>
                 </div>
               </Reveal>

@@ -22,7 +22,7 @@ const App = () => {
           </motion.p>
           <motion.h1 className="font-display mx-auto max-w-4xl text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight"
             initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}>
-            The operating system for <span className="text-gold-gradient">enterprise transformation.</span>
+            The operating system for <span className="text-gold-gradient">organizational transformation and agility.</span>
           </motion.h1>
           <motion.p className="mx-auto mt-7 max-w-2xl text-base md:text-lg leading-relaxed text-muted-foreground"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 1 }}>

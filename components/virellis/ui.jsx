@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import {
-  Compass, ShieldCheck, Sparkles, Rocket, Database, Cloud, LayoutDashboard, Lightbulb,
+  Compass, ShieldCheck, Sparkles, Rocket, Database, RefreshCcw, LayoutDashboard, Users,
 } from 'lucide-react'
 
-export const ICONS = { Compass, ShieldCheck, Sparkles, Rocket, Database, Cloud, LayoutDashboard, Lightbulb }
+export const ICONS = { Compass, ShieldCheck, Sparkles, Rocket, Database, RefreshCcw, LayoutDashboard, Users }
 
 export function Counter({ value, prefix = '', suffix = '', decimals = 0 }) {
   const ref = useRef(null)
