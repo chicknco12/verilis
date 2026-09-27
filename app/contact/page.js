@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { content } from '@/lib/virellis/content'
 import { Reveal, PageHeader } from '@/components/virellis/ui'
+import ContactSection from '@/components/virellis/ContactSection'
 
 const ConciergeBoardroom = dynamic(() => import('@/components/virellis/ConciergeBoardroom'), { ssr: false })
 
@@ -27,6 +28,14 @@ const App = () => {
         </div>
       </section>
 
+      <section className="relative py-12 md:py-16 bg-paper">
+        <div className="mx-auto max-w-7xl px-6 md:px-10">
+          <Reveal>
+            <ContactSection />
+          </Reveal>
+        </div>
+      </section>
+
       <section className="relative py-12 md:py-20" style={{ background: 'linear-gradient(180deg, #FFFFFF 0%, #EFF4FF 40%, #E7EEFF 100%)' }}>
         <div className="mx-auto max-w-7xl px-6 md:px-10">
           <Reveal>
@@ -34,8 +43,8 @@ const App = () => {
               <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-electric/15 blur-[90px]" />
               <div className="pointer-events-none absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-gold/15 blur-[90px]" />
               <div className="relative">
-                <h2 className="font-display max-w-3xl text-2xl md:text-4xl font-semibold leading-[1.1] tracking-tight">The Virellis Concierge</h2>
-                <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">Describe your transformation and generate a board-ready brief in minutes.</p>
+                <h2 className="font-display max-w-3xl text-2xl md:text-4xl font-semibold leading-[1.1] tracking-tight">Need a board-ready brief?</h2>
+                <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">Use the Virellis concierge to describe your transformation and generate a tailored brief in minutes.</p>
                 <div className="mt-9"><ConciergeBoardroom /></div>
               </div>
             </div>

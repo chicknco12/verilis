@@ -19,14 +19,14 @@ export default function ContactSection() {
     setStatus('submitting')
     setError('')
     try {
-      const res = await fetch('/api/contact', {
+      const formData = new FormData(e.currentTarget)
+      const res = await fetch('/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formData).toString(),
       })
-      const data = await res.json()
       if (!res.ok) {
-        setError(data.error || 'Something went wrong. Please try again.')
+        setError('Something went wrong. Please try again or email us directly.')
         setStatus('error')
         return
       }
@@ -55,7 +55,11 @@ export default function ContactSection() {
         </p>
       </div>
 
-      <form onSubmit={submit} className="lg:col-span-3 glass rounded-2xl p-7">
+      <form name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" onSubmit={submit} className="lg:col-span-3 glass rounded-2xl p-7">
+        <input type="hidden" name="form-name" value="contact" />
+        <p className="absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [-webkit-clip-path:inset(50%)] [clip-path:inset(50%)]">
+          <label>Do not fill this out if you are human: <input name="bot-field" /></label>
+        </p>
         {status === 'success' ? (
           <div className="flex h-full min-h-[280px] flex-col items-center justify-center text-center">
             <CheckCircle2 className="h-10 w-10 text-gold" />
@@ -76,21 +80,22 @@ export default function ContactSection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <label className="block">
                 <span className="text-xs tracking-wide text-white/40">Name</span>
-                <input required value={form.name} onChange={update('name')} placeholder="Your full name" className={inputClass} />
+                <input required name="name" value={form.name} onChange={update('name')} placeholder="Your full name" className={inputClass} />
               </label>
               <label className="block">
                 <span className="text-xs tracking-wide text-white/40">Email</span>
-                <input required type="email" value={form.email} onChange={update('email')} placeholder="you@company.com" className={inputClass} />
+                <input required name="email" type="email" value={form.email} onChange={update('email')} placeholder="you@company.com" className={inputClass} />
               </label>
             </div>
             <label className="mt-5 block">
               <span className="text-xs tracking-wide text-white/40">Organization (optional)</span>
-              <input value={form.organization} onChange={update('organization')} placeholder="Your organization" className={inputClass} />
+              <input name="organization" value={form.organization} onChange={update('organization')} placeholder="Your organization" className={inputClass} />
             </label>
             <label className="mt-5 block">
               <span className="text-xs tracking-wide text-white/40">Message</span>
               <textarea
                 required
+                name="message"
                 rows={4}
                 value={form.message}
                 onChange={update('message')}
