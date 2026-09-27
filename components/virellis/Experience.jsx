@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
 import Lenis from 'lenis'
 import {
-  Compass, ShieldCheck, Sparkles, Rocket, Database, Cloud,
-  LayoutDashboard, Lightbulb, ArrowRight, ArrowUpRight, Plus, Command,
+  Compass, ShieldCheck, Sparkles, Rocket, Database, RefreshCcw,
+  LayoutDashboard, Users, ArrowRight, ArrowUpRight, Plus, Command,
 } from 'lucide-react'
 import { content } from '@/lib/virellis/content'
 import { scrollStore } from '@/lib/virellis/scrollStore'
@@ -22,18 +22,22 @@ import ContactSection from './ContactSection'
 const PmoDashboard = dynamic(() => import('./PmoDashboard'), { ssr: false })
 const ConciergeBoardroom = dynamic(() => import('./ConciergeBoardroom'), { ssr: false })
 
-const ICONS = { Compass, ShieldCheck, Sparkles, Rocket, Database, Cloud, LayoutDashboard, Lightbulb }
+const ICONS = { Compass, ShieldCheck, Sparkles, Rocket, Database, RefreshCcw, LayoutDashboard, Users }
 
 // Only footer links with a real section on the page get wired up; the rest
 // (Insights, Playbooks, Approach, Founder) render as plain text since there
 // is nowhere for them to go yet.
 const FOOTER_LINK_TARGETS = {
   'Strategy': '#studio',
+  'Agility': '#studio',
+  'Culture & Change': '#studio',
   'AI Adoption': '#studio',
   'Governance': '#governance',
   'Delivery': '#framework',
   'Frameworks': '#framework',
   'AI Concierge': '#concierge',
+  'Strategy Session': '#command',
+  'Services': '#studio',
   'PMO Dashboard': '#command',
   'Contact': '#contact',
 }
@@ -66,7 +70,7 @@ function Preloader() {
         animate={{ opacity: 1 }}
         transition={{ delay: 1.1, duration: 0.8 }}
       >
-        ENTERPRISE TRANSFORMATION HEADQUARTERS
+        {content.hero.eyebrow}
       </motion.div>
       <motion.div
         className="mt-8 h-px bg-gradient-to-r from-transparent via-gold to-transparent"
@@ -257,7 +261,7 @@ export default function Experience() {
               transition={{ delay: HERO_DELAY + 0.15, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
             >
               The operating system for{' '}
-              <span className="text-gold-gradient">enterprise transformation.</span>
+              <span className="text-gold-gradient">organizational transformation and agility.</span>
             </motion.h1>
             <motion.p
               className="mx-auto mt-7 max-w-2xl text-base md:text-lg leading-relaxed text-muted-foreground"
@@ -540,7 +544,7 @@ export default function Experience() {
             </div>
             <div className="mt-14 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-white/5 pt-8 text-xs text-white/35">
               <span>{'\u00A9'} {new Date().getFullYear()} Virellis. {content.brand.tagline}</span>
-              <span className="tracking-[0.3em]">ENTERPRISE TRANSFORMATION HEADQUARTERS</span>
+              <span className="tracking-[0.3em]">{content.hero.eyebrow}</span>
             </div>
           </div>
         </footer>
