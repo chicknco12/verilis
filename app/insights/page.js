@@ -33,7 +33,7 @@ const App = () => {
 
           <Reveal delay={0.1}>
             <div className="mt-14 rounded-[1.75rem] p-10 text-center" style={{ background: 'linear-gradient(135deg, #EFF4FF 0%, #E7EEFF 100%)' }}>
-              <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">Want these perspectives applied to your programme?</h2>
+              <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">Want these ideas applied to your change?</h2>
               <Link href="/contact" className="btn-gold mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium">
                 Start a conversation <ArrowUpRight className="h-4 w-4" />
               </Link>

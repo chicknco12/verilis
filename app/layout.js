@@ -3,9 +3,9 @@ import { Providers } from './providers'
 import SiteChrome from '@/components/virellis/SiteChrome'
 
 export const metadata = {
-  title: 'Virellis: Enterprise Transformation and Programme Delivery',
+  title: 'Virellis: Agile Consulting and Change Management',
   description:
-    'Virellis is a specialist transformation consultancy helping governments, healthcare, financial services, and technology enterprises deliver complex programmes with confidence. Strategy, governance, AI, and delivery in one operating model.',
+    'Virellis helps complex organisations build agile ways of working and lead change that lasts. Practical consulting for delivery, operating models and adoption.',
 }
 
 export default function RootLayout({ children }) {

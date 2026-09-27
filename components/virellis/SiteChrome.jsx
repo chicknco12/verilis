@@ -14,6 +14,20 @@ import TransformationMode from './TransformationMode'
 
 const Scene3D = dynamic(() => import('./Scene3D'), { ssr: false })
 
+const FOOTER_LINKS = {
+  'Agile Consulting': '/agile-consulting',
+  'Change Management': '/change-management',
+  'Services': '/services',
+  'Delivery Coaching': '/services',
+  'Insights': '/insights',
+  'Industries': '/industries',
+  'About': '/about',
+  'Approach': '/about',
+  'Contact': '/contact',
+  'Discovery Call': '/contact',
+  'Engagement Brief': '/contact',
+}
+
 function Preloader() {
   const letters = content.brand.name.split('')
   return (
@@ -144,7 +158,7 @@ export default function SiteChrome({ children }) {
             </div>
             <div className="flex items-center gap-2">
               <Link href="/contact" className="btn-gold hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium">
-                Strategy Session <ArrowUpRight className="h-3.5 w-3.5" />
+                Book a Discovery Call <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
               <button onClick={() => setMenuOpen((v) => !v)} className="md:hidden flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground" aria-label="Menu">
                 {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -192,11 +206,18 @@ export default function SiteChrome({ children }) {
                 <div key={c.title}>
                   <div className="text-xs tracking-[0.3em] text-muted-foreground">{c.title.toUpperCase()}</div>
                   <ul className="mt-4 space-y-2.5">
-                    {c.links.map((l) => (
-                      <li key={l}>
-                        <span className="link-underline text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">{l}</span>
-                      </li>
-                    ))}
+                    {c.links.map((l) => {
+                      const href = FOOTER_LINKS[l]
+                      return (
+                        <li key={l}>
+                          {href ? (
+                            <Link href={href} className="link-underline text-sm text-muted-foreground hover:text-foreground transition-colors">{l}</Link>
+                          ) : (
+                            <a href={`mailto:${content.contact.email}`} className="link-underline text-sm text-muted-foreground hover:text-foreground transition-colors">{l}</a>
+                          )}
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               ))}

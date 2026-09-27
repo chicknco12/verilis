@@ -22,7 +22,7 @@ const App = () => {
           </motion.p>
           <motion.h1 className="font-display mx-auto max-w-4xl text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight"
             initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}>
-            The operating system for <span className="text-gold-gradient">organizational transformation and agility.</span>
+            Make change <span className="text-gold-gradient">work in the real world.</span>
           </motion.h1>
           <motion.p className="mx-auto mt-7 max-w-2xl text-base md:text-lg leading-relaxed text-muted-foreground"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 1 }}>
@@ -30,11 +30,11 @@ const App = () => {
           </motion.p>
           <motion.div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
             initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 1 }}>
-            <Link href="/services" className="btn-gold inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium">
-              Explore Services <ArrowRight className="h-4 w-4" />
+            <Link href="/agile-consulting" className="btn-gold inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium">
+              Explore Agile Consulting <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/contact" className="btn-ghost inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium">
-              Book a Strategy Session
+            <Link href="/change-management" className="btn-ghost inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium">
+              Explore Change Management
             </Link>
           </motion.div>
         </div>
@@ -101,10 +101,10 @@ const App = () => {
           <Reveal>
             <div className="relative overflow-hidden rounded-[2rem] p-10 md:p-16 text-center" style={{ background: 'linear-gradient(135deg, #EFF4FF 0%, #E7EEFF 100%)' }}>
               <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gold/20 blur-[80px]" />
-              <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tight">Ready to turn strategy into delivery?</h2>
-              <p className="mx-auto mt-5 max-w-xl text-muted-foreground">Bring us the transformation you are navigating. Leave with a board-ready brief.</p>
+              <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tight">Ready to make change stick?</h2>
+              <p className="mx-auto mt-5 max-w-xl text-muted-foreground">Start with the work, the people and the decisions that will make the difference.</p>
               <Link href="/contact" className="btn-gold mt-8 inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-medium">
-                Book a Strategy Session <ArrowRight className="h-4 w-4" />
+                Book a Discovery Call <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </Reveal>
