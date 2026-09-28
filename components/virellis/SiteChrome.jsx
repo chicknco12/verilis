@@ -11,6 +11,7 @@ import { content } from '@/lib/virellis/content'
 import { scrollStore } from '@/lib/virellis/scrollStore'
 import LogoMark from './Logo'
 import TransformationMode from './TransformationMode'
+import VRLSConcierge from './VRLSConcierge'
 
 const Scene3D = dynamic(() => import('./Scene3D'), { ssr: false })
 
@@ -158,7 +159,7 @@ export default function SiteChrome({ children }) {
             </div>
             <div className="flex items-center gap-2">
               <Link href="/contact" className="btn-gold hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium">
-                Book a Discovery Call <ArrowUpRight className="h-3.5 w-3.5" />
+                Start a conversation <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
               <button onClick={() => setMenuOpen((v) => !v)} className="md:hidden flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground" aria-label="Menu">
                 {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -190,6 +191,7 @@ export default function SiteChrome({ children }) {
       {/* Page content */}
       <div className="relative z-10">
         {children}
+        <VRLSConcierge />
 
         {/* Footer */}
         <footer className="relative border-t border-border bg-paper py-16">

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Mail, Send, Loader2, CheckCircle2 } from 'lucide-react'
 import { content } from '@/lib/virellis/content'
 
-const EMPTY_FORM = { name: '', email: '', organization: '', message: '' }
+const EMPTY_FORM = { name: '', email: '', organization: '', role: '', helpWith: '', message: '' }
 
 export default function ContactSection() {
   const [form, setForm] = useState(EMPTY_FORM)
@@ -87,10 +87,14 @@ export default function ContactSection() {
                 <input required name="email" type="email" value={form.email} onChange={update('email')} placeholder="you@company.com" className={inputClass} />
               </label>
             </div>
-            <label className="mt-5 block">
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <label className="block">
               <span className="text-xs tracking-wide text-white/40">Organization (optional)</span>
               <input name="organization" value={form.organization} onChange={update('organization')} placeholder="Your organization" className={inputClass} />
             </label>
+            <label className="block"><span className="text-xs tracking-wide text-white/40">Role</span><input name="role" value={form.role} onChange={update('role')} placeholder="Your role" className={inputClass} /></label>
+            </div>
+            <label className="mt-5 block"><span className="text-xs tracking-wide text-white/40">What can we help with?</span><select name="helpWith" value={form.helpWith} onChange={update('helpWith')} className={inputClass}><option value="">Select an option</option><option>Agile Consulting</option><option>Change Management</option><option>Organizational Transformation</option><option>Agile Coaching</option><option>Product Transformation</option><option>Leadership Enablement</option><option>Other</option></select></label>
             <label className="mt-5 block">
               <span className="text-xs tracking-wide text-white/40">Message</span>
               <textarea
@@ -99,7 +103,7 @@ export default function ContactSection() {
                 rows={4}
                 value={form.message}
                 onChange={update('message')}
-                placeholder="Tell us about the transformation you're navigating."
+                placeholder="What are you trying to change?"
                 className={`${inputClass} resize-none`}
               />
             </label>
@@ -114,7 +118,7 @@ export default function ContactSection() {
               className="btn-gold mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {status === 'submitting' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {status === 'submitting' ? 'Sending…' : 'Send message'}
+              {status === 'submitting' ? 'Sending…' : 'Start the conversation →'}
             </button>
           </>
         )}

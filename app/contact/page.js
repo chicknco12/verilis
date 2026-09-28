@@ -11,7 +11,7 @@ const App = () => {
   const c = content.contact
   return (
     <main>
-      <PageHeader eyebrow={c.eyebrow} title={c.title} subtitle={c.subtitle} />
+      <PageHeader eyebrow="CONTACT" title="Let's talk about what's changing." subtitle="Whether you're beginning a transformation, strengthening Agile delivery, or working through a change that has stalled, we'd like to understand the challenge." />
 
       <section className="relative py-12 md:py-16 bg-paper">
         <div className="mx-auto max-w-7xl px-6 md:px-10">

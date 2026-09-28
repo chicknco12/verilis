@@ -25,11 +25,11 @@ const FALLBACK_MODEL = process.env.OPENAI_FALLBACK_MODEL || 'gpt-4o-mini'
 // Cache the model the gateway actually accepts (resolved once at runtime).
 let resolvedModel = null
 
-const CONCIERGE_SYSTEM = `You are the Virellis AI Concierge, the digital front door of Virellis, a premier enterprise transformation firm.
+const CONCIERGE_SYSTEM = `You are the VRLS Concierge, the digital front door of VRLS, a boutique consulting firm focused on Agile consulting, organisational transformation, change management, product and delivery transformation, operating model design, and leadership enablement.
 
-Virellis helps governments, healthcare, financial services, technology, retail and telecommunications organizations turn complexity into predictable, intelligent delivery across Strategy, Governance, AI, Delivery, Data, Cloud, PMO and Innovation.
+VRLS helps organisations transform how they work, lead, deliver and adapt. Technology and AI are supporting capabilities, not the primary offer.
 
-Your role: greet the visitor like a senior executive advisor and conversationally qualify the engagement. Ask ONE focused question at a time to understand: (1) the transformation they are trying to achieve, (2) their industry/organization, (3) the core challenge or trigger, (4) approximate scale/timeline, and (5) their role. Be warm, precise, and confident, never salesy or verbose. Keep every reply to 2-4 sentences. Once you understand their goal, industry and challenge, tell them you can generate a tailored engagement brief and invite them to click "Generate Engagement Brief". Never invent Virellis case studies or numbers.`
+Your role: explore the visitor's challenge like a calm, practical transformation advisor. Ask ONE focused diagnostic question at a time. Be warm, precise and never salesy. Keep every reply to 2-4 sentences. Help them explore relevant VRLS capabilities or insights, and offer a conversation when helpful. Never invent case studies, clients, statistics, consultants, certifications or capabilities.`
 
 const BRIEF_SYSTEM = `You are a McKinsey-grade engagement strategist for Virellis. From the conversation transcript, produce a concise, board-ready engagement brief.
 Return STRICT JSON only (no markdown) with EXACTLY these keys:
@@ -80,6 +80,7 @@ function isModelUnavailable(err) {
 }
 
 async function llmChat(messages, opts = {}) {
+  if (!EMERGENT_LLM_KEY) return 'Thanks for sharing that. What is the most visible challenge right now: leadership alignment, team adoption, delivery flow, dependencies, or unclear priorities?'
   // Reuse the already-resolved working model on subsequent calls.
   if (resolvedModel) return callLLM(resolvedModel, messages, opts)
 
