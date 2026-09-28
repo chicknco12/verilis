@@ -1,6 +1,5 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -8,12 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Lenis from 'lenis'
 import { ArrowUpRight, Menu, X } from 'lucide-react'
 import { content } from '@/lib/virellis/content'
-import { scrollStore } from '@/lib/virellis/scrollStore'
 import LogoMark from './Logo'
-import TransformationMode from './TransformationMode'
-import VRLSConcierge from './VRLSConcierge'
-
-const Scene3D = dynamic(() => import('./Scene3D'), { ssr: false })
 
 const FOOTER_LINKS = {
   'Agile Consulting': '/agile-consulting',
@@ -66,7 +60,6 @@ function Preloader() {
 export default function SiteChrome({ children }) {
   const pathname = usePathname()
   const [loading, setLoading] = useState(true)
-  const [transformMode, setTransformMode] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const lenisRef = useRef(null)
 
@@ -78,22 +71,10 @@ export default function SiteChrome({ children }) {
     const loop = (time) => { lenis.raf(time); raf = requestAnimationFrame(loop) }
     raf = requestAnimationFrame(loop)
 
-    const onScroll = () => {
-      scrollStore.target = Math.min(1, window.scrollY / (window.innerHeight * 1.5))
-    }
-    const onMove = (e) => {
-      scrollStore.mouseX = (e.clientX / window.innerWidth) * 2 - 1
-      scrollStore.mouseY = (e.clientY / window.innerHeight) * 2 - 1
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('mousemove', onMove, { passive: true })
-    onScroll()
     return () => {
       clearTimeout(t)
       cancelAnimationFrame(raf)
       lenis.destroy()
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('mousemove', onMove)
     }
   }, [])
 
@@ -104,40 +85,11 @@ export default function SiteChrome({ children }) {
     else window.scrollTo(0, 0)
   }, [pathname])
 
-  useEffect(() => {
-    const seq = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a']
-    let idx = 0
-    const onKey = (e) => {
-      const k = (e.key || '').toLowerCase()
-      if (k === seq[idx]) {
-        idx += 1
-        if (idx === seq.length) { setTransformMode(true); idx = 0 }
-      } else {
-        idx = k === seq[0] ? 1 : 0
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
-
   const isActive = (href) => (href === '/' ? pathname === '/' : pathname.startsWith(href))
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
       <AnimatePresence>{loading && <Preloader />}</AnimatePresence>
-      <AnimatePresence>
-        {transformMode && <TransformationMode onClose={() => setTransformMode(false)} />}
-      </AnimatePresence>
-
-      {/* Fixed 3D background */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-space" />
-        <div className="absolute inset-0 bg-grid" />
-        <div className="absolute inset-0"><Scene3D /></div>
-        <div className="absolute inset-0 bg-vignette" />
-        <div className="absolute inset-0 grain opacity-[0.04]" />
-      </div>
-
       {/* Nav */}
       <nav className="fixed top-0 inset-x-0 z-50">
         <div className="mx-auto max-w-7xl px-6 md:px-10">
@@ -191,7 +143,6 @@ export default function SiteChrome({ children }) {
       {/* Page content */}
       <div className="relative z-10">
         {children}
-        <VRLSConcierge />
 
         {/* Footer */}
         <footer className="relative border-t border-border bg-paper py-16">

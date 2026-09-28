@@ -6,25 +6,25 @@
 
 @layer base {
   :root {
-    --background: 240 4% 5%;
-    --foreground: 40 17% 95%;
-    --card: 240 5% 9%;
-    --card-foreground: 40 17% 95%;
-    --popover: 240 5% 9%;
-    --popover-foreground: 40 17% 95%;
-    --primary: 250 100% 67%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+    --card: 48 13% 97%;
+    --card-foreground: 0 0% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 250 57% 52%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 11%;
-    --secondary-foreground: 40 17% 95%;
-    --muted: 240 5% 11%;
-    --muted-foreground: 240 4% 67%;
-    --accent: 250 100% 67%;
+    --secondary: 48 13% 97%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 48 13% 97%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 250 57% 52%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 5% 18%;
-    --input: 240 5% 18%;
-    --ring: 250 100% 67%;
+    --border: 48 7% 90%;
+    --input: 48 7% 90%;
+    --ring: 250 57% 52%;
     --radius: 0.85rem;
   }
 }
@@ -46,14 +46,14 @@
     font-family: 'Sora', 'Inter', sans-serif;
   }
   .glass {
-    background: rgba(23, 23, 27, 0.72);
+    background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(245, 243, 239, 0.08);
+    border: 1px solid #E8E8E5;
     box-shadow: none;
   }
   .text-gold-gradient {
-    background: linear-gradient(120deg, #C7A86B 0%, #947FFF 100%);
+    background: linear-gradient(120deg, #5942C8 0%, #7257FF 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -64,7 +64,7 @@
       radial-gradient(1200px 780px at 50% 8%, rgba(37, 99, 235, 0.10) 0%, rgba(255, 255, 255, 0) 60%),
       radial-gradient(900px 620px at 82% 78%, rgba(79, 70, 229, 0.08) 0%, rgba(255, 255, 255, 0) 55%),
       radial-gradient(760px 520px at 12% 70%, rgba(6, 182, 212, 0.06) 0%, rgba(255, 255, 255, 0) 55%),
-      #0B0B0D;
+      #FFFFFF;
   }
   /* Subtle holographic enterprise grid */
   .bg-grid {
@@ -87,39 +87,39 @@
 
 @layer components {
   .btn-gold {
-    background: #7257FF;
-    color: #F5F3EF;
+    background: #5942C8;
+    color: #FFFFFF;
     transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     box-shadow: none;
   }
   .btn-gold:hover {
-    background: #866EFF;
+    background: #7257FF;
     box-shadow: none;
     transform: translateY(-2px);
   }
   .btn-ghost {
     background: transparent;
-    border: 1px solid rgba(245, 243, 239, 0.2);
-    color: #F5F3EF;
+    border: 1px solid #D9D9D5;
+    color: #171717;
     transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .btn-ghost:hover {
-    background: rgba(245, 243, 239, 0.05);
-    border-color: rgba(245, 243, 239, 0.45);
+    background: #F7F7F5;
+    border-color: #7257FF;
     box-shadow: none;
     transform: translateY(-2px);
   }
   .card-domain {
     background: transparent;
-    border: 1px solid rgba(245, 243, 239, 0.1);
+    border: 1px solid #E8E8E5;
     box-shadow: none;
     transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .card-domain:hover {
     transform: translateY(-6px);
-    border-color: rgba(148, 127, 255, 0.7);
+    border-color: #7257FF;
     box-shadow: none;
-    background: rgba(245, 243, 239, 0.03);
+    background: #FAFAF8;
   }
   .link-underline {
     position: relative;

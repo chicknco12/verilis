@@ -1,0 +1,1 @@
+export default function sitemap() { const base = 'https://vrls.ca'; return ['','/services','/approach','/about','/contact','/insights','/expertise/agile-consulting','/expertise/change-management','/expertise/organizational-transformation','/expertise/product-delivery'].map(path => ({ url: `${base}${path}`, lastModified: new Date() })) }

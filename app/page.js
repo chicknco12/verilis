@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import { content } from '@/lib/virellis/content'
-import { ICONS, Reveal, Counter } from '@/components/virellis/ui'
+import { Reveal, Counter } from '@/components/virellis/ui'
 
 const App = () => {
   return (
@@ -48,23 +48,15 @@ const App = () => {
             <h2 className="font-display mt-5 text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">{content.studio.title}</h2>
             <p className="mt-5 max-w-2xl text-muted-foreground leading-relaxed">{content.studio.subtitle}</p>
           </Reveal>
-          <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {content.domains.map((d, i) => {
-              const Icon = ICONS[d.icon]
+          <div className="mt-16 divide-y divide-border border-y border-border">
+            {content.domains.slice(0, 4).map((d, i) => {
               return (
-                <Reveal key={d.name} delay={(i % 4) * 0.08}>
-                  <Link href="/services" className="card-domain group relative block h-full rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-secondary/60 text-gold transition-colors group-hover:border-gold/40">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <span className="font-display text-xs tracking-[0.3em] text-muted-foreground/60">{d.n}</span>
-                    </div>
-                    <h3 className="mt-6 font-display text-xl font-semibold tracking-tight">{d.name}</h3>
-                    <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{d.desc}</p>
-                    <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground group-hover:text-gold transition-colors">
-                      Learn more <ArrowUpRight className="h-3.5 w-3.5" />
-                    </div>
+                <Reveal key={d.name} delay={i * 0.06}>
+                  <Link href={i === 0 ? '/expertise/agile-consulting' : i === 1 ? '/expertise/change-management' : '/services'} className="group grid gap-4 py-8 md:grid-cols-[100px_1fr_1.2fr_auto] md:items-center">
+                    <span className="text-xs tracking-[0.25em] text-electric">{d.n}</span>
+                    <h3 className="font-display text-2xl font-medium tracking-tight">{d.name}</h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{d.desc}</p>
+                    <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-electric" />
                   </Link>
                 </Reveal>
               )

@@ -22,15 +22,15 @@ module.exports = {
           display: ['Sora', 'Inter', 'sans-serif'],
         },
         colors: {
-          // Dark consulting surfaces
+          // Light editorial consulting surfaces
           graphite: {
-            950: '#0B0B0D', 900: '#111114', 800: '#17171B', 700: '#1D1D22', 600: '#2A2A31',
+            950: '#FFFFFF', 900: '#FAFAF8', 800: '#F7F7F5', 700: '#F0F0ED', 600: '#E8E8E5',
           },
-          gold: { DEFAULT: '#C7A86B', light: '#E0C38A', dark: '#A4854F' },
-          electric: { DEFAULT: '#7257FF', light: '#947FFF', dark: '#513BCB' },
-          highlight: { DEFAULT: '#947FFF', light: '#B6A8FF' },
-          ink: { DEFAULT: '#F5F3EF', 700: '#D8D6D1', 500: '#A7A7AE' },
-          paper: '#111114',
+          gold: { DEFAULT: '#C7A86B', light: '#DDC189', dark: '#A78752' },
+          electric: { DEFAULT: '#5942C8', light: '#7257FF', dark: '#4330A0' },
+          highlight: { DEFAULT: '#7257FF', light: '#947FFF' },
+          ink: { DEFAULT: '#171717', 700: '#404040', 500: '#666666' },
+          paper: '#FFFFFF',
           border: 'hsl(var(--border))',
           input: 'hsl(var(--input))',
           ring: 'hsl(var(--ring))',
